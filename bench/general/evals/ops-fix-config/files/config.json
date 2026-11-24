@@ -1,0 +1,8 @@
+{
+  "port": "8080",
+  "workers": 4,
+  "log_level": "INFO",
+  "database": {
+    "url": "postgres://app@db:5432/app",
+  }
+}

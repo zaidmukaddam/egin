@@ -1,0 +1,23 @@
+# Terminal-Bench 2 agent. `egin bench <terminal-bench-2 checkout> --agent bench/tb2` runs every
+# variant in evals/variants.toml on the same rebuilt task environments, same model and budget.
+model = "deepseek-v4.1-flash"
+web = "off"            # no web for any arm: the benchmark measures the agent, not search
+approval = "never"
+# 100 cut three Terminal-Bench runs off mid-task; the wall-clock deadline is the real limit.
+max_turns = 200
+# One review pass before a run ends (see Config::review): most failures stopped early and confidently.
+review = true
+# A fresh copy of the agent on the same files (see Config::helper). eve's harness has the same tool on by default.
+helper = true
+# No spend cap for any arm: the two harnesses enforce one differently (egin stops at the next turn, eve checks between
+# turns and then allows the cap again with tools denied; eve ran to $2.56 with no run marked capped). The task's own
+# time limit bounds every run the same way.
+max_cost = 0
+bash_timeout = 600
+# egin's default: a command still running after 60s moves to the background and the model polls
+# or kills it, so one slow build can't eat the task's wall clock. [blocking-bash] turns this off.
+bash_wait = 60
+bash_background = true
+read_before_write = false
+# No tool_output_max: egin's default (50000). The 10000 this had cut multi-file reads in the middle, and the model
+# re-read and re-ran to see the rest (FrontierHarness: 4% of outputs cut, 1.8x eve's file reads).

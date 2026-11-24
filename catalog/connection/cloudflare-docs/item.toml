@@ -1,0 +1,2 @@
+description = "Cloudflare's documentation MCP server, no key needed"
+docs = "https://github.com/cloudflare/mcp-server-cloudflare"

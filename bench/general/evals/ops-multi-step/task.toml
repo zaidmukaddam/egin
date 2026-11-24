@@ -1,0 +1,4 @@
+category = "ops"
+split = "heldout"
+prompt = "Each file in inbox/ is a JSON event. Move events with \"level\": \"error\" into errors/, the rest into processed/, then write summary.txt containing a single line: <error count> errors, <other count> other."
+check = "test $(ls errors | wc -l) -eq 2 && test $(ls processed | wc -l) -eq 3 && test -z \"$(ls inbox 2>/dev/null)\" && grep -qx '2 errors, 3 other' summary.txt"

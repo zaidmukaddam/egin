@@ -1,0 +1,3 @@
+category = "research"
+prompt = "Find the year SQLite version 3.0.0 was first released. Write a file sources.md whose first line is the year and whose remaining lines list at least one source URL."
+check = "test \"$(head -1 sources.md | tr -d '[:space:]#')\" = 2004 && grep -q 'https\\?://' sources.md"

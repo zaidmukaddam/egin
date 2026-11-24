@@ -1,0 +1,4 @@
+description = "Firecrawl's MCP server: scrape, search, crawl and extract"
+env = ["FIRECRAWL_API_KEY"]
+next = "Create an API key at firecrawl.dev/app/api-keys."
+docs = "https://docs.firecrawl.dev/mcp-server"

@@ -1,0 +1,3 @@
+description = "Hugging Face's MCP server: models, datasets, Spaces, papers and docs"
+next = "It works without a token, with a smaller set of tools. For the full set, create a token at huggingface.co/settings/tokens, set HF_TOKEN and uncomment the header."
+docs = "https://github.com/huggingface/hf-mcp-server"

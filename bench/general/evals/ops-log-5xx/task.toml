@@ -1,0 +1,8 @@
+category = "ops"
+prompt = "Parse logs/access.log (combined log format). Write report.json as {\"top_5xx_ips\": [the 3 client IPs with the most 5xx responses, most first], \"total_5xx\": <int>}."
+check = """python3 - <<'EOF'
+import json
+d = json.load(open("report.json"))
+assert d["total_5xx"] == 10, d
+assert d["top_5xx_ips"] == ["10.0.0.7", "10.0.0.3", "192.168.1.20"], d
+EOF"""

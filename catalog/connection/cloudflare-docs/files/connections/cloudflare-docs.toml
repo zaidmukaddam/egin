@@ -1,0 +1,2 @@
+# Cloudflare's documentation MCP server. Its tools reach the model as cloudflare-docs__<tool>.
+url = "https://docs.mcp.cloudflare.com/mcp"

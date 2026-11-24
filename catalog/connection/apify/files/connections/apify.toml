@@ -1,0 +1,3 @@
+# Apify's MCP server. Its tools reach the model as apify__<tool>.
+url = "https://mcp.apify.com"
+headers = { Authorization = "Bearer ${APIFY_TOKEN}" }

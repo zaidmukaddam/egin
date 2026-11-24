@@ -1,0 +1,6 @@
+Logistics Services Contract
+
+Between Acme Corp and Brightline Logistics.
+1. Start. Services begin 2026-03-01.
+2. Price. The annual contract value is $120,000, payable in two equal instalments.
+3. Renewal. Renews automatically for one year unless cancelled with 60 days' notice.

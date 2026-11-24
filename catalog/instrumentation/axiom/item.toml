@@ -1,0 +1,4 @@
+description = "Send traces to an Axiom dataset"
+env = ["AXIOM_DOMAIN", "AXIOM_TOKEN", "AXIOM_DATASET"]
+next = "AXIOM_DOMAIN is your organization's ingest host, shown in Axiom's settings, such as api.axiom.co. Create an API token with ingest access to the dataset: Settings → API tokens."
+docs = "https://axiom.co/docs/send-data/opentelemetry"

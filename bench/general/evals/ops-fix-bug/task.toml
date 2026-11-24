@@ -1,0 +1,4 @@
+category = "ops"
+split = "heldout"
+prompt = "The tests in this project fail. Find and fix the bug in pricing.py (do not change the tests). Run `python3 -m unittest` to confirm."
+check = "python3 -m unittest -q 2>&1 | tail -1 | grep -q OK && grep -q 'def test_bulk_discount' test_pricing.py"

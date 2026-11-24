@@ -1,0 +1,234 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource/geist-mono/400.css";
+
+/* Dark is the default; light follows the system unless the toggle has picked one (data-theme on <html>).
+   `--tint` is the colour overlays are made of: white on dark, black on light. */
+:root, :root[data-theme="dark"] {
+  --bg: #101010;
+  --fg: #ececec;
+  /* Body copy sits a step below headings; muted is for descriptions and secondary UI. */
+  --text: #d9d9d9;
+  --muted: #b4b4b4;
+  --dim: #7d7d7d;
+  --panel: #0a0a0a;
+  --raise: #141414;
+  --tint: 255 255 255;
+  --ring: rgb(255 255 255 / 0.08);
+  --code-bg: #080808;
+  --code-border: #1d1d1d;
+  --button: #1f1f1f;
+  --button-hover: #262626;
+  --button-shadow: none;
+  /* The inset track of a segmented control: darker than the raised button that slides along it. */
+  --track: #0a0a0a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #ffffff; --fg: #0f0f0f; --text: #2e2e2e; --muted: #5e5e5e; --dim: #737373;
+    --panel: #ffffff; --raise: #f4f4f4; --tint: 0 0 0; --ring: rgb(0 0 0 / 0.08);
+    --code-bg: #f4f4f4; --code-border: #e6e6e6;
+    --button: #ffffff; --button-hover: #fafafa; --button-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    --track: #e9e9e9;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #ffffff; --fg: #0f0f0f; --text: #2e2e2e; --muted: #5e5e5e; --dim: #737373;
+  --panel: #ffffff; --raise: #f4f4f4; --tint: 0 0 0; --ring: rgb(0 0 0 / 0.08);
+  --code-bg: #f4f4f4; --code-border: #e6e6e6;
+  --button: #ffffff; --button-hover: #fafafa; --button-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  --track: #e9e9e9;
+  color-scheme: light;
+}
+:root {
+  --mono: "Geist Mono", ui-monospace, monospace;
+  /* Strong ease-out for anything the user triggers; the icon curve for swapping one glyph for another. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-icon: cubic-bezier(0.2, 0, 0, 1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 32px; }
+/* Other in-page #anchor links glide too, where the browser animates it; the contents links have their own. */
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 1rem/1.5 "Inter Variable", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss03";
+}
+a { color: var(--fg); text-decoration: none; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { text-wrap: balance; }
+h2 { font-size: 1.25rem; line-height: 1.4; font-weight: 550; margin: 0 0 16px; }
+p { font-size: 1.0625rem; line-height: 1.53; color: var(--text); margin: 0 0 16px; text-wrap: pretty; }
+p strong, li strong { color: var(--fg); font-weight: 550; }
+.mono { font-family: var(--mono); }
+.dim { color: var(--dim); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Inline code sits in the line like a word: sized to the text around it, on that text's line height. As an
+   inline-block it is never split across lines: one that doesn't fit what's left of the line moves down whole,
+   and only one longer than a full line wraps, inside its own box. */
+:not(pre) > code {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: baseline;
+  font-family: var(--mono);
+  font-size: 0.8125em;
+  line-height: 1.45;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  padding: 0 0.35em;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+kbd {
+  font: 450 0.75rem/1.83 "Inter Variable", sans-serif;
+  background: rgb(var(--tint) / 0.04);
+  border-radius: 6px;
+  padding: 0 6px;
+  box-shadow: inset 0 0 0 1px var(--ring);
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.card {
+  border-radius: 14px;
+  padding: 4px;
+  background: var(--raise);
+  box-shadow: 0 0 0 1px var(--ring);
+  margin: 0 0 16px;
+}
+.panel {
+  background: var(--panel);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgb(var(--tint) / 0.04);
+}
+
+.copy {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms, transform 100ms var(--ease-out);
+}
+/* A 40px target around the 28px button. */
+.copy::before { content: ""; position: absolute; inset: -6px; }
+@media (hover: hover) { .copy:hover { color: var(--fg); background: rgb(var(--tint) / 0.06); } }
+.copy:active { transform: scale(0.96); }
+.copy.done { color: var(--fg); }
+/* The copy icon and a check share one cell and cross-fade, so a copy is confirmed by more than colour. */
+.copy svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), scale 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
+.copy .check, .copy.done svg:not(.check) { opacity: 0; scale: 0.25; filter: blur(4px); }
+.copy.done .check { opacity: 1; scale: 1; filter: none; }
+
+.skip { position: absolute; top: 12px; left: 12px; z-index: 10; padding: 8px 12px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 14px; font-weight: 500; translate: 0 -200%; }
+.skip:focus-visible { translate: 0; }
+
+/* Code sits on the site's own panels, not the highlighter's background. */
+.highlights { background: transparent !important; }
+
+/* The theme toggle: one button showing the current theme's icon; its label says what a click does. */
+.theme { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--dim); cursor: pointer; transition: color 150ms, background-color 150ms, transform 100ms var(--ease-out); }
+.theme::before { content: ""; position: absolute; inset: -6px; }
+@media (hover: hover) { .theme:hover { color: var(--fg); background: rgb(var(--tint) / 0.06); } }
+.theme:active { transform: scale(0.96); }
+.theme svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), scale 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
+.theme .sun, .light-theme .theme .moon { opacity: 0; scale: 0.25; filter: blur(4px); }
+.light-theme .theme .sun { opacity: 1; scale: 1; filter: none; }
+
+/* Cross-page view transitions. The logo morphs between the landing hero and the docs sidebar;
+   the docs nav and footer hold still between pages; the rest cross-fades. */
+@view-transition { navigation: auto; }
+::view-transition-group(*) { animation-duration: 260ms; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+/* The browser's own cross-fade, only shorter: the old page fades out as the new one fades in, blended so
+   their sum stays opaque. Fading one out before the other in let the background show through between
+   them, which read as the page reloading. */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; animation-timing-function: ease-out; }
+footer { view-transition-name: footer; }
+/* Next and Previous in the docs are an ordered sequence, so the page moves the way the reader went: a short
+   shift, not a slide across the window. Any other navigation keeps the plain fade above. The type is set by
+   the pager links (see the script in Page.astro). */
+html:active-view-transition-type(docs-next)::view-transition-old(root) { animation: 160ms ease-out both vt-shift-out; --vt-shift: -16px; }
+html:active-view-transition-type(docs-next)::view-transition-new(root) { animation: 220ms ease-out 40ms both vt-shift-in; --vt-shift: 16px; }
+html:active-view-transition-type(docs-prev)::view-transition-old(root) { animation: 160ms ease-out both vt-shift-out; --vt-shift: 16px; }
+html:active-view-transition-type(docs-prev)::view-transition-new(root) { animation: 220ms ease-out 40ms both vt-shift-in; --vt-shift: -16px; }
+@keyframes vt-shift-out { to { opacity: 0; translate: var(--vt-shift) 0; } }
+@keyframes vt-shift-in { from { opacity: 0; translate: var(--vt-shift) 0; } }
+/* A change within one page carries a type too, so the navigation fade does not run for it.
+   `panel`: something opens, closes or resizes over the page (the Ask AI panel). The page stays live and still. */
+html:active-view-transition-type(panel)::view-transition-group(root) { animation: none; }
+html:active-view-transition-type(panel)::view-transition-old(root) { display: none; }
+html:active-view-transition-type(panel)::view-transition-new(root) { animation: none; }
+/* The pieces that hold still between pages are part of that page here: on their own they would glide to
+   where the page makes room for the panel while the text beside them had already moved. */
+html:active-view-transition-type(panel) :is(.menu, footer, .logo) { view-transition-name: none; }
+/* `theme`: every surface cross-fades to the other theme in place, with no movement. */
+html:active-view-transition-type(theme)::view-transition-group(*),
+html:active-view-transition-type(theme)::view-transition-old(*),
+html:active-view-transition-type(theme)::view-transition-new(*) { animation-duration: 200ms; animation-timing-function: ease-out; }
+/* Benchmark charts (src/lib/charts.mjs). Lime means "ours" and is the only accent: egin's bar on every chart, even
+   where eve wins, in both themes. Everything it is measured against is graphite. On white the lime is below 3:1, so
+   every bar prints its value and the table under each chart is its table view. */
+:root, :root[data-theme="dark"] { --chart-0: #c6f432; --chart-1: #4a4a4a; --chart-2: #333; --chart-grid: rgb(255 255 255 / 0.08); --chart-zero: rgb(255 255 255 / 0.16); --chart-tip-shadow: 0 6px 20px rgb(0 0 0 / 0.4); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --chart-0: #c6f432; --chart-1: #b9bfc7; --chart-2: #d5d9de; --chart-grid: #e3e7eb; --chart-zero: #c9ced4; --chart-tip-shadow: 0 6px 20px rgb(0 0 0 / 0.08); } }
+:root[data-theme="light"] { --chart-0: #c6f432; --chart-1: #b9bfc7; --chart-2: #d5d9de; --chart-grid: #e3e7eb; --chart-zero: #c9ced4; --chart-tip-shadow: 0 6px 20px rgb(0 0 0 / 0.08); }
+.chart { --name: 9.5rem; --end: 7.5rem; margin: 28px 0 12px; }
+.chart-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 14px; }
+.chart-title { font-size: 0.9375rem; line-height: 1.4; font-weight: 550; color: var(--fg); }
+.chart-sub { font: 0.75rem/1.4 var(--mono); color: var(--dim); }
+.chart-s0 { background: var(--chart-0); }
+.chart-s1 { background: var(--chart-1); }
+.chart-s2 { background: var(--chart-2); }
+.chart-plot { position: relative; }
+.chart-gridlines { position: absolute; inset: 0 var(--end) 26px calc(var(--name) + 12px); pointer-events: none; }
+.chart-grid { position: absolute; top: 0; bottom: 0; left: var(--x); width: 1px; background: var(--chart-grid); }
+.chart-grid.zero { background: var(--chart-zero); }
+.chart-row { position: relative; display: grid; grid-template-columns: var(--name) 1fr; gap: 12px; align-items: center; padding: 6px 0; border-radius: 4px; }
+.chart-row + .chart-row { margin-top: 6px; }
+.chart-row:hover, .chart-row:focus-visible, .chart-row.on { background: rgb(var(--tint) / 0.04); }
+.chart-name { font-size: 0.75rem; line-height: 1.3; color: var(--muted); overflow-wrap: anywhere; }
+.chart-row.mine .chart-name { color: var(--fg); font-weight: 500; }
+.chart-bars { display: flex; flex-direction: column; gap: 3px; padding-right: var(--end); }
+.chart-bar-row { display: flex; align-items: center; gap: 8px; height: 14px; }
+.chart-bar { flex: none; width: var(--w); min-width: 2px; height: 14px; border-radius: 0 2px 2px 0; }
+.chart-val { display: inline-flex; gap: 6px; font: 0.75rem/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.chart-val.lead { color: var(--fg); }
+.chart-n, .chart-who { color: var(--dim); }
+.chart-who { font-family: "Inter Variable", sans-serif; }
+.chart-none { font: 0.75rem/1 var(--mono); color: var(--dim); }
+.chart-axis { position: relative; height: 26px; margin: 4px var(--end) 0 calc(var(--name) + 12px); }
+.chart-tick { position: absolute; top: 6px; left: var(--x); translate: -50% 0; font: 0.65625rem/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--dim); }
+.chart-tick:first-child { translate: 0 0; }
+.chart-axis-label { position: absolute; top: 6px; left: 100%; margin-left: 22px; font: 0.65625rem/1 var(--mono); color: var(--dim); white-space: nowrap; }
+.chart-tip { position: fixed; z-index: 20; min-width: 168px; padding: 10px 12px; border-radius: 8px; background: var(--raise); box-shadow: 0 0 0 1px var(--ring), var(--chart-tip-shadow); font-size: 0.8125rem; line-height: 1.4; pointer-events: none; }
+.chart-tip-name { color: var(--muted); margin-bottom: 6px; }
+.chart-tip-row { display: grid; grid-template-columns: 12px auto 1fr; align-items: center; gap: 8px; }
+.chart-tip-row strong { font: 500 0.75rem/1.6 var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+.chart-tip-row span:last-child { color: var(--muted); }
+.chart-tip-key { width: 12px; height: 2px; border-radius: 1px; }
+/* Under 480px the name moves above its bars, the plot takes the full width, and the axis label drops below the ticks. */
+@media (max-width: 480px) {
+  .chart { --name: 0px; --end: 8.5rem; }
+  .chart-row { grid-template-columns: 1fr; gap: 6px; }
+  .chart-gridlines { left: 0; }
+  .chart-axis { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  /* The icon swap stays, as a plain cross-fade. */
+  .copy svg, .theme svg { scale: 1 !important; filter: none !important; }
+}

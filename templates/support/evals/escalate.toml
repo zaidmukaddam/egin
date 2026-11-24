@@ -1,0 +1,2 @@
+prompt = "Do you offer an on-premises version of the product?"
+expect = "ESCALATE"

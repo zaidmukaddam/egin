@@ -1,0 +1,20 @@
+# Linear, as a described channel: egin checks the signature, runs one session per issue, and
+# answers with a comment through Linear's GraphQL API. Webhook URL: https://<your server>/channels/linear
+# (Settings → API → Webhooks, events: Comments).
+
+[verify]
+header = "Linear-Signature"            # hex HMAC-SHA256 of the raw body
+secret = "${LINEAR_WEBHOOK_SECRET}"
+
+[message]
+text = "/data/body"
+thread = "/data/issueId"
+id_header = "Linear-Delivery"          # a redelivered webhook is skipped
+only = { "/type" = "Comment", "/action" = "create" }
+skip = { "/actor/id" = "${LINEAR_AGENT_USER_ID}" }   # the agent's own comments
+# mention = "@agent"                   # answer only comments that contain this
+
+[reply]
+url = "https://api.linear.app/graphql"
+headers = { Authorization = "${LINEAR_API_KEY}" }
+body = '''{"query": "mutation($issueId: String!, $body: String!) { commentCreate(input: { issueId: $issueId, body: $body }) { success } }", "variables": {"issueId": {{thread}}, "body": {{answer}}}}'''

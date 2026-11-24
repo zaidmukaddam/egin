@@ -1,0 +1,4 @@
+description = "Tavily's MCP server: search, extract, crawl and research"
+env = ["TAVILY_API_KEY"]
+next = "Create an API key (tvly-…) in the Tavily dashboard."
+docs = "https://docs.tavily.com/documentation/mcp"

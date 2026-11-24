@@ -1,0 +1,4 @@
+# Vercel's MCP server. It only takes an OAuth sign-in: run `egin connect vercel` once.
+# Docs: https://vercel.com/docs/agent-resources/vercel-mcp
+url = "https://mcp.vercel.com"
+auth = "oauth"

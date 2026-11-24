@@ -1,0 +1,4 @@
+# Supabase's MCP server. Its tools reach the model as supabase__<tool>.
+# Add ?project_ref=<ref> to keep the agent to one project, or &read_only=true.
+url = "https://mcp.supabase.com/mcp"
+headers = { Authorization = "Bearer ${SUPABASE_ACCESS_TOKEN}" }

@@ -1,0 +1,11 @@
+# Slack channel. Create the app from ../slack-manifest.json (api.slack.com/apps → From a manifest).
+#
+# Socket Mode (default here): the server dials Slack, so no public URL is needed.
+#   SLACK_APP_TOKEN: Basic Information → App-Level Tokens, scope connections:write (xapp-…)
+#   SLACK_BOT_TOKEN: OAuth & Permissions → Bot User OAuth Token (xoxb-…)
+app_token = "${SLACK_APP_TOKEN}"
+bot_token = "${SLACK_BOT_TOKEN}"
+
+# Or the HTTP Events API instead: turn Socket Mode off in the app, set the request URL to
+# https://<your server>/channels/slack, and set:
+# signing_secret = "${SLACK_SIGNING_SECRET}"

@@ -1,0 +1,8 @@
+# Web search through egin's client tools, through the router, and closed-book.
+[client-web]
+
+[router-web]
+web = "server"
+
+[closed-book]
+web = "off"   # bash has no network either (agent.toml), or bash + curl is a web search

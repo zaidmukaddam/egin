@@ -1,0 +1,85 @@
+# Arms for `egin bench`. Every arm uses the same model, instructions, turn and spend limits.
+
+# The full harness: typed tools, batching, compaction on entry, elision, then summarisation.
+[egin]
+
+# [egin] with room for long tasks (DeepSWE), no spend cap. Named for its old 300-turn limit; 500 now, since the
+# review pass took two runs past 300 and eve's arm has no turn limit. The task's time limit bounds both.
+[egin-300]
+max_turns = 500
+max_cost = 0
+
+# [egin-300] at low reasoning effort: the router's default for the muse models reasons close to max.
+[egin-300-low]
+max_turns = 300
+max_cost = 0
+reasoning_effort = "low"
+
+# [egin-300] keeping every old tool output in full: tests whether elision hides detail on long tasks.
+[egin-300-no-elision]
+max_turns = 300
+max_cost = 0
+elision = false
+summarisation = false
+
+# HAR-28: a plain bash tool loop. One tool, one call per turn, full output, no context management.
+[baseline]
+tool_style = "bash"
+batching = false
+compaction = false
+elision = false
+summarisation = false
+
+# HAR-29: each switch turned off (or on) alone, against [egin].
+[no-compaction]
+compaction = false
+
+[no-elision]
+elision = false
+summarisation = false
+
+[no-batching]
+batching = false
+
+[planning]
+planning = true
+
+[bash-only]
+tool_style = "bash"
+
+# bash-only and no-batching together: the simplest tool loop that keeps egin's context management.
+# Candidate profile for muse-ember-1.0, where baseline, bash-only and no-batching each beat [egin] (19 vs 17).
+[simple]
+tool_style = "bash"
+batching = false
+
+# write_file refuses to overwrite a file the agent has not read, or that changed since.
+[read-before-write]
+read_before_write = true
+
+# The old bench default: wait for each command (up to 10 minutes, then kill), no background jobs.
+[blocking-bash]
+bash_background = false
+bash_wait = 600
+
+# [egin] for a self-hosted model that takes images (Inkling 2 Mini on vLLM): vLLM's model list does not say which
+# inputs a model takes, so egin assumes text only, and on Inkling TB 2.1 read_file refused the task's images while
+# eve sent them (chess-best-move, code-from-image).
+[egin-vision]
+vision = true
+
+# HAR-32: eve's default harness on the same VMs, model and spend cap (driver in bench/eve-arm).
+[eve]
+external = "../eve-arm"
+
+# [eve] with no spend cap, to set against [egin-300] (DeepSWE). It sets max_cost itself: without it, eve takes
+# agent.toml's cap, which twice stopped eve's DeepSWE runs at $1 a task while egin-300 ran uncapped.
+[eve-uncapped]
+external = "../eve-arm"
+max_cost = 0
+
+# pi v0.83.0 as Harbor runs it (the harness behind the Inkling 2 Mini model card's Terminal-Bench 2.1 score), on
+# the same VMs or Daytona sandboxes and model (driver in bench/pi-arm). pi has no spend cap; the task's time
+# limit bounds it.
+[pi]
+external = "../pi-arm"

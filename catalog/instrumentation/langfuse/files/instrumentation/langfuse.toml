@@ -1,0 +1,5 @@
+# Spans go to Langfuse over OTLP/HTTP. ${VAR} reads the host's environment when a span is sent.
+# This is the EU region; US is us.cloud.langfuse.com, Japan jp.cloud.langfuse.com, and a self-hosted
+# Langfuse takes its own host.
+endpoint = "https://cloud.langfuse.com/api/public/otel/v1/traces"
+headers = { Authorization = "Basic ${LANGFUSE_OTEL_AUTH}", x-langfuse-ingestion-version = "4" }

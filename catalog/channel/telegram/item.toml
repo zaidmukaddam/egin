@@ -1,0 +1,7 @@
+description = "Telegram: answers private chats, and mentions or replies in groups"
+env = ["TELEGRAM_BOT_TOKEN", "TELEGRAM_SECRET"]
+next = """
+Create a bot with @BotFather to get TELEGRAM_BOT_TOKEN, and pick a secret: openssl rand -hex 32
+Run `egin serve` on a public HTTPS URL, then point Telegram at it:
+  curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" -d url=https://<your server>/channels/telegram -d secret_token=$TELEGRAM_SECRET"""
+docs = "https://egin.dev/docs/channels#telegram"

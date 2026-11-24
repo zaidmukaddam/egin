@@ -1,0 +1,4 @@
+description = "Apify's MCP server: run Store Actors for scraping and automation"
+env = ["APIFY_TOKEN"]
+next = "Copy your API token from the Apify Console: Settings → API & Integrations."
+docs = "https://docs.apify.com/platform/integrations/mcp"

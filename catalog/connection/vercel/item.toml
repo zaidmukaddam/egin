@@ -1,0 +1,6 @@
+description = "Vercel: projects, deployments, logs and docs (OAuth sign-in)"
+env = []
+next = """
+Sign in once in the browser: egin connect vercel
+The token is kept in .egin/oauth/vercel.json and refreshes itself."""
+docs = "https://vercel.com/docs/agent-resources/vercel-mcp"

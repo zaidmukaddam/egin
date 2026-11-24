@@ -1,0 +1,3 @@
+category = "research"
+prompt = "Using web search, find what HTTP status code number is defined for 'Too Many Requests' and the RFC that introduced it. Reply in the form: <code> RFC <number>."
+expect = "429 RFC 6585"

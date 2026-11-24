@@ -1,0 +1,6 @@
+{
+  "name": "egin-codex-arm",
+  "private": true,
+  "type": "module",
+  "description": "Codex CLI 0.164.0, as on the FrontierHarness v1.1 leaderboard, run inside the task's Daytona sandbox as a comparison arm for `egin bench`"
+}

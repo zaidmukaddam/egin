@@ -1,0 +1,4 @@
+description = "Supabase's MCP server: projects, SQL, edge functions and docs"
+env = ["SUPABASE_ACCESS_TOKEN"]
+next = "Create a personal access token in Supabase: Dashboard → Account → Access Tokens. To keep the agent to one project, add ?project_ref=<ref> to the url."
+docs = "https://supabase.com/docs/guides/ai-tools/mcp"

@@ -1,0 +1,34 @@
+---
+import { highlight } from "../lib/highlight.mjs";
+
+const { code, lang, file } = Astro.props as { code: string; lang: string; file: string };
+---
+<div class="card">
+  <div class="head">
+    <span class="file">{file}</span>
+    <button class="copy" data-copy={code} aria-label={`Copy ${file}`}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+    </button>
+  </div>
+  <div class="panel">
+    <Fragment set:html={highlight(code, lang)} />
+  </div>
+</div>
+
+<style>
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px 8px 12px;
+  }
+  .file { font: 0.8125rem/1.54 var(--mono); color: var(--muted); }
+  .panel :global(pre) {
+    margin: 0;
+    padding: 16px;
+    background: transparent !important;
+    font: 0.8125rem/1.5 var(--mono);
+    overflow-x: auto;
+  }
+</style>

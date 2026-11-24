@@ -1,0 +1,4 @@
+# PostHog's MCP server. Its tools reach the model as posthog__<tool>.
+url = "https://mcp.posthog.com/mcp"
+headers = { Authorization = "Bearer ${POSTHOG_PERSONAL_API_KEY}" }
+# Optional: x-posthog-project-id, x-posthog-organization-id, or x-posthog-read-only = "true".

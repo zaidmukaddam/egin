@@ -1,0 +1,10 @@
+tool_style = "typed"
+web = "off"
+planning = true
+memory_max = 4000
+# Runbook commands run in a microVM. Allow only the hosts the agent checks.
+network = ["example.com"]
+# Destructive commands still need a human: see middleware/pre_tool.
+approval = "ask"
+max_turns = 40
+max_cost = 0.50

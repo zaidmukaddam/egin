@@ -1,0 +1,7 @@
+# Context7's MCP server. Its tools reach the model as context7__<tool>.
+url = "https://mcp.context7.com/mcp"
+# A key raises the rate limits:
+# headers = { Authorization = "Bearer ${CONTEXT7_API_KEY}" }
+
+# Looking up docs changes nothing: list its tools (see `egin info`) in `safe` to skip approval.
+# safe = []

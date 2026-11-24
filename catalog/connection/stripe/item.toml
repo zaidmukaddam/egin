@@ -1,0 +1,6 @@
+description = "Stripe's MCP server: customers, payments, invoices and docs"
+env = ["STRIPE_AGENT_API_KEY"]
+next = """
+Create an agent API key in the Stripe Dashboard (it shows an Agent badge). From December 2026 Stripe's MCP server accepts only agent keys, not secret or restricted keys.
+Stripe's tools can move money: leave them out of `safe`, so every call waits for approval."""
+docs = "https://docs.stripe.com/mcp"

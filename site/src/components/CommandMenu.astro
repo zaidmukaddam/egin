@@ -1,0 +1,274 @@
+---
+// ⌘K / Ctrl+K menu for the docs, built on kmenu (headless: it filters, moves the active option and sets ARIA;
+// this file draws it). Empty, it lists the pages; typing also searches every section heading.
+import { getCollection, render } from "astro:content";
+
+const groups = ["Start", "Build", "Run", "Measure"];
+const docs = (await getCollection("docs")).sort(
+  (a, b) => groups.indexOf(a.data.group) - groups.indexOf(b.data.group) || a.data.order - b.data.order,
+);
+const href = (id: string) => (id === "index" ? "/docs" : `/docs/${id}`);
+const pages = docs.map((d) => ({ id: `p-${d.id}`, label: d.data.title, group: d.data.group, keywords: [d.data.description], data: { href: href(d.id) } }));
+const sections = (
+  await Promise.all(
+    docs.map(async (d) =>
+      (await render(d)).headings
+        .filter((h) => h.depth === 2 || h.depth === 3)
+        .map((h) => ({ id: `s-${d.id}-${h.slug}`, label: h.text, group: d.data.title, data: { href: `${href(d.id)}#${h.slug}`, page: d.data.title } })),
+    ),
+  )
+).flat();
+---
+<dialog class="kmenu" aria-label="Search the docs">
+  <div class="field">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="text" placeholder="Search the docs" spellcheck="false" autocomplete="off" />
+    <kbd>Esc</kbd>
+  </div>
+  <ul></ul>
+  <p class="empty" hidden>No results</p>
+</dialog>
+<script type="application/json" id="kmenu-data" set:html={JSON.stringify({ pages, sections })} />
+
+<script>
+  import { CommandCore, simpleFilter } from "kmenu";
+
+  type Data = { href: string; page?: string; excerpt?: string; text?: boolean };
+  type Item = { id: string; label: string; group: string; keywords?: string[]; data: Data };
+  type Hit = { url: string; title: string; excerpt: string };
+  type Pagefind = {
+    debouncedSearch: (q: string, o?: object, ms?: number) => Promise<{ results: { data: () => Promise<{ url: string; meta: { title?: string }; excerpt: string; sub_results?: Hit[] }> }[] } | null>;
+  };
+  const { pages, sections } = JSON.parse(document.getElementById("kmenu-data")!.textContent!) as { pages: Item[]; sections: Item[] };
+  const dialog = document.querySelector<HTMLDialogElement>("dialog.kmenu")!;
+  const input = dialog.querySelector("input")!;
+  const list = dialog.querySelector("ul")!;
+  const empty = dialog.querySelector<HTMLElement>(".empty")!;
+
+  // Full-text hits come from Pagefind and already match the query, so the title filter passes them through.
+  const core = new CommandCore<Data>({
+    onSelect: (o) => (location.href = o.data!.href),
+    filter: (opts, q) => [...simpleFilter(opts.filter((o) => !o.data?.text), q), ...opts.filter((o) => o.data?.text)],
+  });
+  // Sections only join once there is a query, so the open menu is a short list of pages.
+  let searching = false;
+  core.registerOptions(pages);
+
+  // Pagefind's index is built after `astro build` (the `build` script), so it exists on the deployed site, not in
+  // `astro dev`. It loads on the first search and fetches only the index chunks a query needs.
+  let pagefind: Pagefind | null | undefined;
+  const loadPagefind = async () => {
+    if (pagefind === undefined) {
+      try {
+        // A full URL: Vite's dev server rewrites root-relative dynamic imports to `?import`, which a static file
+        // doesn't answer.
+        const url = new URL("/pagefind/pagefind.js", location.href).href;
+        pagefind = (await import(/* @vite-ignore */ url)) as Pagefind;
+      } catch {
+        pagefind = null;
+      }
+    }
+    return pagefind;
+  };
+  // Full-text search waits for a pause in typing. Until the new hits arrive, the previous ones stay in place, dimmed,
+  // so the list doesn't empty and refill under the cursor on every keystroke.
+  let textHits: Item[] = [];
+  let stale = false;
+  let pending = false; // a full-text search is scheduled or running: "No results" would be premature
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const fullText = async (q: string) => {
+    const pf = await loadPagefind();
+    const res = pf && q.length >= 2 ? await pf.debouncedSearch(q, {}, 0) : null;
+    if (res === null && pf && q.length >= 2) return; // superseded by a newer search
+    const hits: Item[] = [];
+    for (const r of (res?.results ?? []).slice(0, 5)) {
+      const d = await r.data();
+      const sub = d.sub_results?.find((s) => s.url.includes("#")) ?? d.sub_results?.[0];
+      const title = d.meta.title ?? "";
+      const href = (sub?.url ?? d.url).replace(/\/index\.html/, "").replace(/\.html/, "");
+      hits.push({ id: `t-${hits.length}`, label: sub && sub.title !== title ? `${title} › ${sub.title}` : title, group: "In the text", data: { href, excerpt: sub?.excerpt ?? d.excerpt, text: true } });
+    }
+    if (core.getState().input.trim() !== q) return;
+    const fresh = hits.length > 0 && textHits.length === 0;
+    textHits = hits;
+    stale = false;
+    pending = false;
+    core.registerOptions([...pages, ...sections, ...textHits]);
+    draw();
+    if (fresh) list.querySelectorAll(".text").forEach((li) => li.classList.add("arrive"));
+  };
+
+  const ip = core.getInputProps();
+  ip.ref(input);
+  for (const [k, v] of Object.entries(ip)) if (typeof v === "string") input.setAttribute(k, v);
+  input.addEventListener("input", ip.onInput);
+  input.addEventListener("keydown", ip.onKeyDown);
+  const lp = core.getListboxProps();
+  lp.ref(list);
+  list.id = lp.id;
+  list.setAttribute("role", lp.role);
+  list.setAttribute("aria-label", "Docs pages and sections");
+
+  // One highlight for the whole list that slides to the active row, instead of each row lighting up on its own.
+  const hl = document.createElement("li");
+  hl.className = "hl";
+  hl.setAttribute("role", "presentation");
+  hl.setAttribute("aria-hidden", "true");
+  const moveHl = (animate: boolean) => {
+    const id = core.getState().activeId;
+    const li = id ? list.querySelector<HTMLElement>(`#kmenu-option-${CSS.escape(id)}`) : null;
+    hl.style.opacity = li ? "1" : "0";
+    if (!li) return;
+    if (!animate) hl.style.transition = "none";
+    hl.style.transform = `translateY(${li.offsetTop}px)`;
+    hl.style.height = `${li.offsetHeight}px`;
+    if (!animate) {
+      void hl.offsetHeight;
+      hl.style.transition = "";
+    }
+  };
+
+  const draw = () => {
+    const s = core.getState();
+    input.setAttribute("aria-expanded", String(s.open));
+    list.replaceChildren(hl);
+    let group = "";
+    for (const o of s.filtered) {
+      if (o.group !== group) {
+        group = o.group ?? "";
+        const h = document.createElement("li");
+        h.className = "group";
+        h.setAttribute("role", "presentation");
+        h.textContent = group;
+        list.append(h);
+      }
+      const p = core.getOptionProps(o.id!);
+      const li = document.createElement("li");
+      li.id = p.id;
+      li.setAttribute("role", p.role);
+      li.setAttribute("aria-selected", String(p["aria-selected"]));
+      li.addEventListener("click", p.onClick);
+      li.addEventListener("mousemove", p.onMouseEnter);
+      li.textContent = o.label;
+      if (o.data?.page) li.classList.add("section");
+      if (o.data?.text) li.classList.add("text");
+      if (o.data?.text && stale) li.classList.add("stale");
+      if (o.data?.excerpt) {
+        // Pagefind's excerpt is our own docs text with the matched words wrapped in <mark>.
+        const ex = document.createElement("span");
+        ex.className = "excerpt";
+        ex.innerHTML = o.data.excerpt;
+        li.append(ex);
+      }
+      p.ref(li);
+      list.append(li);
+    }
+    empty.hidden = s.filtered.length > 0 || pending;
+    if (!empty.hidden) empty.textContent = `No results for “${input.value.trim()}”. Try a page name or fewer words.`;
+    moveHl(false);
+  };
+
+  core.on("change", (e) => {
+    const q = e.type === "change" ? e.input.trim() : "";
+    const query = q !== "";
+    clearTimeout(timer);
+    if (!query) {
+      textHits = [];
+      stale = false;
+    } else {
+      stale = textHits.length > 0;
+    }
+    pending = query && q.length >= 2;
+    if (query !== searching || !query) {
+      searching = query;
+      core.registerOptions(query ? [...pages, ...sections, ...textHits] : pages);
+    }
+    draw();
+    if (query) timer = setTimeout(() => fullText(q), 150);
+  });
+  core.on("navigate", () => {
+    const id = core.getState().activeId;
+    list.querySelectorAll('[role="option"]').forEach((li) => li.setAttribute("aria-selected", String(li.id === `kmenu-option-${id}`)));
+    moveHl(true);
+  });
+  core.on("open", () => {
+    input.value = "";
+    if (!dialog.open) dialog.showModal();
+    draw();
+  });
+  core.on("close", () => {
+    if (dialog.open) dialog.close();
+    clearTimeout(timer);
+    textHits = [];
+    stale = false;
+    if (searching) {
+      searching = false;
+      core.registerOptions(pages);
+    }
+  });
+  // Esc and a click on the backdrop close the dialog natively; keep kmenu's state in step.
+  dialog.addEventListener("close", () => core.getState().open && core.close());
+  dialog.addEventListener("click", (e) => e.target === dialog && core.close());
+
+  document.querySelectorAll(".kmenu-open").forEach((b) => b.addEventListener("click", () => core.open()));
+  const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+  document.querySelectorAll(".kmenu-key").forEach((k) => (k.textContent = mac ? "⌘K" : "Ctrl K"));
+</script>
+
+<style is:global>
+  dialog.kmenu {
+    width: min(560px, calc(100vw - 32px));
+    max-height: min(480px, calc(100dvh - 32px));
+    margin: 12vh auto auto;
+    padding: 0;
+    border: 1px solid var(--ring);
+    border-radius: 14px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
+    overflow: hidden;
+    /* Leaving: quicker than arriving, and it keeps rendering until the fade ends (display/overlay allow-discrete). */
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transform-origin: 50% 0;
+    transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out), display 120ms allow-discrete, overlay 120ms allow-discrete;
+  }
+  /* While the exit fades, the closed dialog must not catch clicks meant for the page. */
+  dialog.kmenu:not([open]) { pointer-events: none; }
+  dialog.kmenu[open] {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    transform: none;
+    transition-duration: 180ms;
+    @starting-style { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  }
+  dialog.kmenu::backdrop { background: rgb(0 0 0 / 0); transition: background-color 180ms var(--ease-out), display 180ms allow-discrete, overlay 180ms allow-discrete; }
+  dialog.kmenu[open]::backdrop { background: rgb(0 0 0 / 0.5); }
+  @starting-style { dialog.kmenu[open]::backdrop { background: rgb(0 0 0 / 0); } }
+  .kmenu .field { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--ring); color: var(--dim); }
+  .kmenu input { flex: 1; min-width: 0; height: 48px; border: 0; outline: 0; background: none; color: var(--fg); font: inherit; font-size: 0.9375rem; }
+  /* iOS Safari zooms the page when a focused input's text is under 16px. */
+  @media (max-width: 639px) { .kmenu input { font-size: 1rem; } }
+  .kmenu input::placeholder { color: var(--dim); }
+  /* The system font (SF Pro on macOS) draws ⌘ and the other key symbols as Apple's keyboards print them. */
+  .kmenu kbd, .kmenu-key { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 12px; line-height: 16px; letter-spacing: 0.02em; color: var(--dim); border: 1px solid var(--ring); border-radius: 5px; padding: 1px 5px; }
+  .kmenu ul { position: relative; list-style: none; margin: 0; padding: 6px; overflow-y: auto; }
+  .kmenu li.group { padding: 10px 10px 4px; font-size: 12px; color: var(--dim); }
+  .kmenu li[role="option"] { position: relative; padding: 8px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; scroll-margin: 8px; transition: color 120ms, opacity 160ms var(--ease-out); }
+  .kmenu li.section { padding-left: 20px; color: var(--muted); }
+  .kmenu li[aria-selected="true"] { color: var(--fg); }
+  /* The single highlight behind the active row; it slides between rows instead of each row lighting up. */
+  .kmenu li.hl { position: absolute; top: 0; left: 6px; right: 6px; height: 0; border-radius: 8px; background: var(--raise); pointer-events: none; opacity: 0; transition: transform 140ms var(--ease-out), height 140ms var(--ease-out), opacity 120ms; }
+  /* Full-text hits for the previous query, shown dimmed while the new search runs; new hits fade up into place. */
+  .kmenu li.stale { opacity: 0.45; }
+  .kmenu li.arrive { animation: kmenu-arrive 180ms var(--ease-out) both; }
+  @keyframes kmenu-arrive { from { opacity: 0; transform: translateY(3px); } }
+  @media (prefers-reduced-motion: reduce) {
+    dialog.kmenu, dialog.kmenu::backdrop, .kmenu li.hl, .kmenu li[role="option"] { transition: none; }
+    .kmenu li.arrive { animation: none; }
+  }
+  .kmenu .empty { margin: 0; padding: 24px; text-align: center; font-size: 14px; color: var(--dim); }
+  .kmenu .excerpt { display: block; margin-top: 2px; font-size: 0.8125rem; line-height: 1.46; color: var(--dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .kmenu .excerpt mark { background: none; color: var(--fg); font-weight: 500; }
+</style>

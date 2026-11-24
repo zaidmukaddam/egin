@@ -1,0 +1,5 @@
+# The agent as an MCP server at /mcp, with the tools send_message and get_session.
+# Clients authenticate with EGIN_TOKEN, as on the HTTP API.
+
+# What the agent is for, shown to the calling model in the tool description.
+# description = "Checks a release: changelog, tests, open issues"

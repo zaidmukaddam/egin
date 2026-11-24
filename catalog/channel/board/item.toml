@@ -1,0 +1,8 @@
+description = "Vercel Board: answers messages in a board channel, one session per thread (no public URL)"
+next = """
+Install the Vercel CLI and sign in (`vercel login`), or set BOARD_TOKEN where there is no login, such as on a
+server. Set `channel` in channels/board.toml to the channel the agent follows, then run `egin serve`. The agent
+writes as the `profile` profile, so people mention it as @<your handle>/<profile>. To use a board other than
+your team's General one, set BOARD_NAME or BOARD_URL. `egin add tool/board` gives the agent tools to post,
+read and work board tasks too."""
+docs = "https://egin.dev/docs/channels#vercel-board"

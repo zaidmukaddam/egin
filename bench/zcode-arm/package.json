@@ -1,0 +1,6 @@
+{
+  "name": "egin-zcode-arm",
+  "private": true,
+  "type": "module",
+  "description": "ZCode 0.17.0, as on the FrontierHarness v1.1 leaderboard, run inside the task's Daytona sandbox as a comparison arm for `egin bench`"
+}

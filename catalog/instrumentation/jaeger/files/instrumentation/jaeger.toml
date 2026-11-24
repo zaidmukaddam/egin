@@ -1,0 +1,2 @@
+# Spans go to a local Jaeger over OTLP/HTTP.
+endpoint = "http://localhost:4318/v1/traces"

@@ -1,0 +1,4 @@
+description = "Zapier's MCP server: actions across thousands of apps"
+env = ["ZAPIER_MCP_TOKEN"]
+next = "Create a server at mcp.zapier.com, choose its actions, and generate a connection token for it."
+docs = "https://docs.zapier.com/mcp/overview/how-connections-work"

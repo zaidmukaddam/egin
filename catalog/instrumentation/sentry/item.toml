@@ -1,0 +1,4 @@
+description = "Send traces to Sentry's OTLP endpoint"
+env = ["SENTRY_OTLP_TRACES_ENDPOINT", "SENTRY_PUBLIC_KEY"]
+next = "Both are in Sentry: Project settings → Client Keys (DSN) → OpenTelemetry (OTLP), the traces endpoint and the public key."
+docs = "https://docs.sentry.io/concepts/otlp/"

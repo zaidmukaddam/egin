@@ -1,0 +1,2 @@
+prompt = "Search the web to find the year Rust 1.0 was released. Reply with the year."
+expect = "2015"

@@ -1,0 +1,2 @@
+prompt = "Research who maintains the SQLite project and its license. Write a report to reports/sqlite.md following the report skill."
+check = "test -s reports/sqlite.md && grep -qi 'public domain' reports/sqlite.md && grep -q 'http' reports/sqlite.md"

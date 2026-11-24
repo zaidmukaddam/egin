@@ -1,0 +1,10 @@
+category = "documents"
+split = "heldout"
+prompt = "Read notes/standup.md and write actions.csv with header owner,action,due listing every action item (due as YYYY-MM-DD, empty if none given). One row per action."
+check = """python3 - <<'EOF'
+import csv
+rows = list(csv.DictReader(open("actions.csv")))
+assert [r["owner"].strip() for r in rows] and sorted(r["owner"].strip() for r in rows) == ["Dana", "Leo", "Priya"], rows
+due = {r["owner"].strip(): r["due"].strip() for r in rows}
+assert due == {"Dana": "2026-11-20", "Leo": "", "Priya": "2026-11-18"}, due
+EOF"""

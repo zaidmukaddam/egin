@@ -1,0 +1,6 @@
+description = "MCP server: other agents, IDEs and Claude hand the agent work at /mcp"
+env = ["EGIN_TOKEN"]
+next = """
+Run `egin serve`; the agent answers MCP at /mcp, behind EGIN_TOKEN like the session routes.
+Point a client at https://<your server>/mcp with the header Authorization: Bearer <EGIN_TOKEN>."""
+docs = "https://egin.dev/docs/channels#mcp-server"

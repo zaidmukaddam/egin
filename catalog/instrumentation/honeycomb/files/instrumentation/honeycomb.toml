@@ -1,0 +1,3 @@
+# Spans go to Honeycomb over OTLP/HTTP. ${VAR} reads the host's environment when a span is sent.
+endpoint = "https://api.honeycomb.io/v1/traces"
+headers = { x-honeycomb-team = "${HONEYCOMB_API_KEY}" }

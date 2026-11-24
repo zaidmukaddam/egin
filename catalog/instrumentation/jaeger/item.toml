@@ -1,0 +1,5 @@
+description = "Send traces to a local Jaeger, to look at runs on your own machine"
+next = """
+Start Jaeger with its OTLP port open, then open http://localhost:16686:
+  docker run --rm -p 16686:16686 -p 4318:4318 jaegertracing/jaeger:latest"""
+docs = "https://www.jaegertracing.io/docs/latest/getting-started/"

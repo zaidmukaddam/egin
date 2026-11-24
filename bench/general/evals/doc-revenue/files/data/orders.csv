@@ -1,0 +1,8 @@
+order_id,customer_id,amount,status
+100,1,120.50,paid
+101,2,300.00,paid
+102,3,99.99,paid
+103,4,110.00,paid
+104,5,125.00,paid
+105,2,500.00,refunded
+106,1,40.00,refunded

@@ -1,0 +1,4 @@
+description = "Linear's MCP server: issues, projects and comments"
+env = ["LINEAR_API_KEY"]
+next = "Create a personal API key in Linear: Settings → Security & access → Personal API keys."
+docs = "https://linear.app/docs/mcp"

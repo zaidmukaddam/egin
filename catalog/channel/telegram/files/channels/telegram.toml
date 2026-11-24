@@ -1,0 +1,10 @@
+# Telegram channel (Bot API webhook at https://<your server>/channels/telegram).
+#   TELEGRAM_BOT_TOKEN: from @BotFather
+#   TELEGRAM_SECRET:    the secret_token you pass to setWebhook; requests without it are refused
+bot_token = "${TELEGRAM_BOT_TOKEN}"
+secret_token = "${TELEGRAM_SECRET}"
+
+# The bot's username, to answer "@name ..." in groups. Without it, a group gets answers only to
+# replies to the bot. Telegram sends a group's mentions only to a bot with privacy mode off
+# (@BotFather → /setprivacy) or one that is a group admin.
+# username = "my_egin_bot"

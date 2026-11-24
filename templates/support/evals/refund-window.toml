@@ -1,0 +1,2 @@
+prompt = "I bought a monthly plan 20 days ago. Can I get my money back?"
+expect = "14 days"

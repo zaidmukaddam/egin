@@ -1,0 +1,564 @@
+---
+import { getCollection, render } from "astro:content";
+import Page from "../../layouts/Page.astro";
+import Logo from "../../components/Logo.astro";
+
+export async function getStaticPaths() {
+  const groups = ["Start", "Build", "Run", "Measure", "Reference"];
+  const all = (await getCollection("docs")).sort(
+    (a, b) => groups.indexOf(a.data.group) - groups.indexOf(b.data.group) || a.data.order - b.data.order,
+  );
+  return all.map((entry, i) => ({
+    params: { slug: entry.id === "index" ? undefined : entry.id },
+    props: { entry, all, prev: all[i - 1], next: all[i + 1] },
+  }));
+}
+
+const { entry, all, prev, next } = Astro.props;
+const { Content, headings } = await render(entry);
+const groups = ["Start", "Build", "Run", "Measure", "Reference"] as const;
+const href = (id: string) => (id === "index" ? "/docs" : `/docs/${id}`);
+const toc = headings.filter((h) => h.depth === 2);
+// The wide-screen rail also lists h3s, indented, so its line can step in and out.
+const railToc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+// Page-action icons, one stroke weight to match the menu's text.
+const stroke = (d: string, size = 16) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const icon = {
+  copy: stroke('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', 14),
+  check: stroke('<path d="M20 6 9 17l-5-5"/>', 14),
+  markdown: stroke('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 15V9l3 3 3-3v6M17 9v6M15 13l2 2 2-2"/>'),
+  ask: stroke('<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z"/>'),
+  out: stroke('<path d="M7 17 17 7M8 7h9v9"/>', 12),
+};
+// Brand marks from svgl (svgl.app). OpenAI and Cursor follow the text colour, as their light and dark
+// versions there differ only in fill; Claude keeps its orange. OpenAI's viewBox is cropped to the mark.
+const logo = {
+  openai: '<svg width="16" height="16" viewBox="99 99 413 413" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M252.794 108.802C289.191 99.0484 326.265 110.305 351.148 135.135C385.113 126.072 422.85 134.862 449.492 161.505C476.136 188.149 484.925 225.888 475.862 259.85V259.854C500.696 284.735 511.95 321.81 502.198 358.207C492.447 394.602 464.161 421.084 430.215 430.217C421.083 464.162 394.603 492.448 358.206 502.199C321.812 511.951 284.734 500.693 259.852 475.864C225.887 484.927 188.15 476.137 161.507 449.495C134.864 422.851 126.073 385.111 135.136 351.149C110.304 326.266 99.0496 289.192 108.801 252.795C118.552 216.4 146.84 189.918 180.784 180.785C189.917 146.841 216.396 118.553 252.794 108.802ZM374.292 407.145C374.292 411.271 372.092 415.086 368.517 417.148L283.723 466.102C302.487 480.585 327.555 486.459 352.217 479.852C386.997 470.532 410.068 439.312 410.555 405.006V317.717C410.555 315.08 409.125 312.621 406.843 311.303L374.292 292.509V407.145ZM251.868 415.897C248.296 417.959 243.893 417.959 240.317 415.897L155.526 366.942C152.366 390.436 159.811 415.08 177.866 433.136H177.863C203.325 458.594 241.896 462.962 271.85 446.232L347.449 402.586C349.735 401.268 351.148 398.8 351.148 396.163V358.579L251.868 415.897ZM368.602 220.628C366.319 219.309 363.474 219.318 361.191 220.637L328.641 239.431L427.921 296.749C431.496 298.811 433.697 302.627 433.697 306.752V404.661C455.622 395.654 473.244 376.881 479.851 352.218C489.169 317.442 473.668 281.85 444.201 264.274L368.602 220.628ZM177.303 206.34C155.377 215.348 137.756 234.122 131.148 258.783C121.832 293.561 137.331 329.153 166.799 346.727L242.398 390.373C244.68 391.692 247.525 391.684 249.807 390.366L282.357 371.572L183.078 314.253C179.504 312.189 177.303 308.375 177.303 304.251V206.34ZM259.849 279.145V331.858L305.5 358.213L351.15 331.858V279.145L305.5 252.789L259.849 279.145ZM327.276 144.9C308.512 130.418 283.445 124.543 258.782 131.15C224.002 140.471 200.931 171.691 200.445 205.995V293.286C200.445 295.923 201.875 298.381 204.158 299.7L236.707 318.493V203.856C236.707 199.731 238.909 195.916 242.483 193.853L327.276 144.9ZM433.137 177.867C407.675 152.407 369.103 148.038 339.149 164.769L263.55 208.415C261.265 209.734 259.852 212.202 259.852 214.838V252.423L359.132 195.105C362.703 193.041 367.108 193.041 370.682 195.105L455.473 244.06C458.635 220.567 451.189 195.922 433.135 177.867H433.137Z"/></svg>',
+  claude: '<svg width="16" height="16" viewBox="0 0 256 257" aria-hidden="true"><path fill="#D97757" d="m50.228 170.321 50.357-28.257.843-2.463-.843-1.361h-2.462l-8.426-.518-28.775-.778-24.952-1.037-24.175-1.296-6.092-1.297L0 125.796l.583-3.759 5.12-3.434 7.324.648 16.202 1.101 24.304 1.685 17.629 1.037 26.118 2.722h4.148l.583-1.685-1.426-1.037-1.101-1.037-25.147-17.045-27.22-18.017-14.258-10.37-7.713-5.25-3.888-4.925-1.685-10.758 7-7.713 9.397.649 2.398.648 9.527 7.323 20.35 15.75L94.817 91.9l3.889 3.24 1.555-1.102.195-.777-1.75-2.917-14.453-26.118-15.425-26.572-6.87-11.018-1.814-6.61c-.648-2.723-1.102-4.991-1.102-7.778l7.972-10.823L71.42 0 82.05 1.426l4.472 3.888 6.61 15.101 10.694 23.786 16.591 32.34 4.861 9.592 2.592 8.879.973 2.722h1.685v-1.556l1.36-18.211 2.528-22.36 2.463-28.776.843-8.1 4.018-9.722 7.971-5.25 6.222 2.981 5.12 7.324-.713 4.73-3.046 19.768-5.962 30.98-3.889 20.739h2.268l2.593-2.593 10.499-13.934 17.628-22.036 7.778-8.749 9.073-9.657 5.833-4.601h11.018l8.1 12.055-3.628 12.443-11.342 14.388-9.398 12.184-13.48 18.147-8.426 14.518.778 1.166 2.01-.194 30.46-6.481 16.462-2.982 19.637-3.37 8.88 4.148.971 4.213-3.5 8.62-20.998 5.184-24.628 4.926-36.682 8.685-.454.324.519.648 16.526 1.555 7.065.389h17.304l32.21 2.398 8.426 5.574 5.055 6.805-.843 5.184-12.962 6.611-17.498-4.148-40.83-9.721-14-3.5h-1.944v1.167l11.666 11.406 21.387 19.314 26.767 24.887 1.36 6.157-3.434 4.86-3.63-.518-23.526-17.693-9.073-7.972-20.545-17.304h-1.36v1.814l4.73 6.935 25.017 37.59 1.296 11.536-1.814 3.76-6.481 2.268-7.13-1.297-14.647-20.544-15.1-23.138-12.185-20.739-1.49.843-7.194 77.448-3.37 3.953-7.778 2.981-6.48-4.925-3.436-7.972 3.435-15.749 4.148-20.544 3.37-16.333 3.046-20.285 1.815-6.74-.13-.454-1.49.194-15.295 20.999-23.267 31.433-18.406 19.702-4.407 1.75-7.648-3.954.713-7.064 4.277-6.286 25.47-32.405 15.36-20.092 9.917-11.6-.065-1.686h-.583L44.07 198.125l-12.055 1.555-5.185-4.86.648-7.972 2.463-2.593 20.35-13.999-.064.065Z"/></svg>',
+  cursor: '<svg width="16" height="16" viewBox="0 0 466.73 532.09" fill="currentColor" aria-hidden="true"><path d="M457.43,125.94L244.42,2.96c-6.84-3.95-15.28-3.95-22.12,0L9.3,125.94c-5.75,3.32-9.3,9.46-9.3,16.11v247.99c0,6.65,3.55,12.79,9.3,16.11l213.01,122.98c6.84,3.95,15.28,3.950,22.12,0l213.01-122.98c5.75-3.32,9.3-9.46,9.3-16.11v-247.99c0-6.65-3.55-12.79-9.3-16.11h-.01ZM444.050,151.990l-205.63,356.16c-1.39,2.4-5.06,1.42-5.06-1.36v-233.21c0-4.66-2.49-8.97-6.53-11.31L24.87,145.67c-2.4-1.39-1.42-5.06,1.36-5.06h411.26c5.84,0,9.49,6.33,6.570,11.39h-.01Z"/></svg>',
+};
+const copyIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+---
+<Page title={entry.id === "index" ? "egin docs" : `${entry.data.title} · egin docs`} description={entry.data.description}>
+  <div class="docs">
+    <aside class="side">
+      <a class="home" href="/"><span class="sr">egin home</span><Logo size={4} /></a>
+      <button class="kmenu-open" type="button">Search the docs<span class="kmenu-key" aria-hidden="true">⌘K</span></button>
+      <button class="ask-open-btn" type="button" data-ask-open>Ask AI<span class="ask-key" aria-hidden="true">⌘I</span></button>
+      <button class="menu-open" type="button" aria-controls="docs-menu" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        Menu
+      </button>
+      <!-- Beside the page on wide screens; a full-screen sheet behind the Menu button on narrow ones. -->
+      <div class="menu" id="docs-menu">
+        <div class="menu-head">
+          <span>Browse</span>
+          <button class="menu-close" type="button" aria-label="Close the menu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <button class="kmenu-open menu-search" type="button">Search the docs<span class="kmenu-key" aria-hidden="true">⌘K</span></button>
+        <nav aria-label="Docs">
+          {groups.map((g) => (
+            <div class="group">
+              <p>{g}</p>
+              {all.filter((d) => d.data.group === g).map((d) => (
+                <a href={href(d.id)} aria-current={d.id === entry.id ? "page" : undefined}>{d.data.title}</a>
+              ))}
+            </div>
+          ))}
+        </nav>
+      </div>
+    </aside>
+    <script is:inline>
+      // Every page is a new document, so the sidebar would start at its top again on each click. It takes
+      // up where the page before left it, before the first paint, and then keeps this page's link in view.
+      (() => {
+        const side = document.querySelector(".side");
+        const KEY = "docs-side-scroll";
+        try { side.scrollTop = Number(sessionStorage.getItem(KEY)) || 0; } catch {}
+        side.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest" });
+        addEventListener("pagehide", () => { try { sessionStorage.setItem(KEY, String(side.scrollTop)); } catch {} });
+      })();
+    </script>
+
+    <main id="content" data-pagefind-body>
+      <div class="doc-head">
+        <h1>{entry.data.title}</h1>
+        <div class="head-actions">
+        {toc.length > 2 && (
+          <details class="onpage" data-pagefind-ignore>
+            <summary aria-label="On this page" title="On this page">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+            </summary>
+            <nav aria-label="On this page">
+              <p>On this page</p>
+              {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+            </nav>
+          </details>
+        )}
+        <div class="page-actions" data-pagefind-ignore data-md={`/docs/${entry.id}.md`}>
+          <button class="pa-copy" type="button">
+            <span class="pa-icon" aria-hidden="true"><Fragment set:html={icon.copy} /><Fragment set:html={icon.check} /></span>
+            <span class="pa-label">Copy page</span>
+          </button>
+          <button class="pa-more" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="More page actions">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="pa-menu" role="menu" hidden>
+            <button role="menuitem" type="button" data-act="copy"><Fragment set:html={icon.copy} /><strong>Copy page</strong><span>Copy the page as Markdown for LLMs</span></button>
+            <a role="menuitem" href={`/docs/${entry.id}.md`} target="_blank"><Fragment set:html={icon.markdown} /><strong>View as Markdown</strong><span>Open this page as plain text</span><Fragment set:html={icon.out} /></a>
+            <a role="menuitem" data-act="chatgpt" target="_blank" rel="noreferrer"><Fragment set:html={logo.openai} /><strong>Open in ChatGPT</strong><span>Ask about this page there</span><Fragment set:html={icon.out} /></a>
+            <a role="menuitem" data-act="claude" target="_blank" rel="noreferrer"><Fragment set:html={logo.claude} /><strong>Open in Claude</strong><span>Ask about this page there</span><Fragment set:html={icon.out} /></a>
+            <a role="menuitem" data-act="cursor" target="_blank" rel="noreferrer"><Fragment set:html={logo.cursor} /><strong>Open in Cursor</strong><span>Work on it with this page in context</span><Fragment set:html={icon.out} /></a>
+            <button role="menuitem" type="button" data-ask-open><Fragment set:html={icon.ask} /><strong>Ask AI about this page</strong><span>Chat with this page as context</span></button>
+          </div>
+        </div>
+        </div>
+      </div>
+      <p class="desc">{entry.data.description}</p>
+      <div class="prose" data-copy-icon={copyIcon}><Content /></div>
+      <div class="helpful" data-pagefind-ignore data-page={entry.id}>
+        <span class="helpful-q">Was this page helpful?</span>
+        <button type="button" data-helpful="yes">Yes</button>
+        <button type="button" data-helpful="no">No</button>
+        <span class="helpful-thanks" role="status"></span>
+      </div>
+      <nav class="pager" aria-label="Pager" data-pagefind-ignore>
+        {prev ? <a href={href(prev.id)}><span>Previous</span>{prev.data.title}</a> : <span />}
+        {next && <a class="nx" href={href(next.id)}><span>Next</span>{next.data.title}</a>}
+      </nav>
+    </main>
+
+    {toc.length > 2 && (
+      <aside class="rail">
+        <p>On this page</p>
+        <nav aria-label="On this page">
+          <svg class="line" aria-hidden="true"><path class="track" /></svg>
+          <div class="thumb-mask" aria-hidden="true"><div class="thumb"></div></div>
+          {railToc.map((h) => <a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>)}
+        </nav>
+        <div class="rail-actions">
+          <button type="button" class="to-top">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 4-4 4 4M12 16V8"/></svg>
+            Scroll to top
+          </button>
+          <button type="button" data-ask-open>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg>
+            Ask about this page
+          </button>
+        </div>
+      </aside>
+    )}
+  </div>
+
+  <script>
+    import { wireChartTips } from "../../lib/chart-tip";
+    import { track } from "@vercel/analytics";
+    wireChartTips();
+
+    // Page actions: a split button, "Copy page" plus a menu of the other ways to take the page elsewhere.
+    const actions = document.querySelector<HTMLElement>(".page-actions");
+    if (actions) {
+      const mdPath = actions.dataset.md!;
+      const mdUrl = new URL(mdPath, location.origin).href;
+      const menu = actions.querySelector<HTMLElement>(".pa-menu")!;
+      const more = actions.querySelector<HTMLButtonElement>(".pa-more")!;
+      const label = actions.querySelector<HTMLElement>(".pa-label")!;
+      const prompt = encodeURIComponent(`Read ${mdUrl} so I can ask questions about it.`);
+      actions.querySelector<HTMLAnchorElement>('[data-act="chatgpt"]')!.href = `https://chatgpt.com/?hints=search&q=${prompt}`;
+      actions.querySelector<HTMLAnchorElement>('[data-act="claude"]')!.href = `https://claude.ai/new?q=${prompt}`;
+      actions.querySelector<HTMLAnchorElement>('[data-act="cursor"]')!.href = `https://cursor.com/link/prompt?text=${prompt}`;
+      const copyBtn = actions.querySelector<HTMLButtonElement>(".pa-copy")!;
+      const items = () => [...menu.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+      const setOpen = (open: boolean) => {
+        menu.hidden = !open;
+        more.setAttribute("aria-expanded", String(open));
+        if (open) items()[0].focus();
+      };
+      const copyPage = async () => {
+        try {
+          const text = fetch(mdPath).then((r) => r.text());
+          // Safari only allows a clipboard write begun inside the click, so it gets the text still on its way.
+          if (typeof ClipboardItem !== "undefined" && navigator.clipboard.write) {
+            await navigator.clipboard.write([new ClipboardItem({ "text/plain": text.then((t) => new Blob([t], { type: "text/plain" })) })]);
+          } else {
+            await navigator.clipboard.writeText(await text);
+          }
+          label.textContent = "Copied";
+          copyBtn.classList.add("done");
+        } catch {
+          label.textContent = "Couldn't copy";
+        }
+        setTimeout(() => {
+          label.textContent = "Copy page";
+          copyBtn.classList.remove("done");
+        }, 1600);
+      };
+      copyBtn.addEventListener("click", copyPage);
+      more.addEventListener("click", () => setOpen(menu.hidden));
+      menu.addEventListener("click", (e) => {
+        const item = (e.target as Element).closest<HTMLElement>('[role="menuitem"]');
+        if (!item) return;
+        if (item.dataset.act === "copy") copyPage();
+        setOpen(false);
+      });
+      menu.addEventListener("keydown", (e) => {
+        const list = items();
+        const i = list.indexOf(document.activeElement as HTMLElement);
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          list[(i + (e.key === "ArrowDown" ? 1 : list.length - 1)) % list.length].focus();
+        } else if (e.key === "Escape") {
+          setOpen(false);
+          more.focus();
+        }
+      });
+      document.addEventListener("click", (e) => {
+        if (!menu.hidden && !actions.contains(e.target as Node)) setOpen(false);
+      });
+    }
+
+    // "Was this page helpful?" goes to Vercel Analytics as a custom event, one answer per page view.
+    const helpful = document.querySelector<HTMLElement>(".helpful");
+    helpful?.addEventListener("click", (e) => {
+      const b = (e.target as Element).closest<HTMLButtonElement>("[data-helpful]");
+      if (!b) return;
+      track("docs_helpful", { page: helpful.dataset.page!, helpful: b.dataset.helpful! });
+      helpful.querySelectorAll("button").forEach((x) => (x.disabled = true));
+      helpful.querySelector(".helpful-thanks")!.textContent = "Thanks for the feedback";
+    });
+
+    document.querySelector(".to-top")?.addEventListener("click", () =>
+      scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }),
+    );
+
+    // On narrow screens the docs menu is a full-screen sheet: Menu opens it, and the ×, Esc or a link close it.
+    const sheet = document.getElementById("docs-menu")!;
+    const opener = document.querySelector<HTMLButtonElement>(".menu-open")!;
+    const setSheet = (open: boolean) => {
+      sheet.classList.toggle("open", open);
+      document.documentElement.classList.toggle("sheet-open", open);
+      opener.setAttribute("aria-expanded", String(open));
+      (open ? sheet.querySelector<HTMLElement>(".menu-close") : opener)?.focus();
+    };
+    opener.addEventListener("click", () => setSheet(true));
+    sheet.querySelector(".menu-close")!.addEventListener("click", () => setSheet(false));
+    sheet.querySelector(".menu-search")!.addEventListener("click", () => setSheet(false));
+    sheet.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open")) setSheet(false); });
+    matchMedia("(min-width: 960px)").addEventListener("change", (e) => { if (e.matches) setSheet(false); });
+
+    // On this page: the section being read is the last h2 above a line near the top of the viewport. Both the rail
+    // (wide screens) and the disclosure (narrow ones) mark it, and the rail's marker moves to it.
+    const heads = [...document.querySelectorAll<HTMLElement>(".prose :is(h2, h3)[id]")];
+    const links = [...document.querySelectorAll<HTMLAnchorElement>(".rail a, .onpage nav a")];
+    const rail = document.querySelector<HTMLElement>(".rail nav");
+    const svg = rail?.querySelector<SVGSVGElement>("svg.line");
+    const mask = rail?.querySelector<HTMLElement>(".thumb-mask");
+    const thumb = rail?.querySelector<HTMLElement>(".thumb");
+    const onpage = document.querySelector<HTMLDetailsElement>(".onpage");
+    // The popover closes on a click outside it or Esc, like the page-actions menu.
+    document.addEventListener("click", (e) => { if (onpage?.open && !onpage.contains(e.target as Node)) onpage.open = false; });
+    onpage?.addEventListener("keydown", (e) => { if (e.key === "Escape" && onpage.open) { onpage.open = false; onpage.querySelector("summary")?.focus(); } });
+    let current = "";
+
+    // The rail's line, the way Fumadocs draws it: a path through the links, straight down within a depth and a short
+    // diagonal where the depth changes. The light is a block (the thumb) inside a box masked by that same path, so
+    // it follows every bend, and it moves by transitioning its top and height, so it glides between sections.
+    const X = { 2: 0.5, 3: 10.5 } as Record<string, number>;
+    const railItems = rail ? [...rail.querySelectorAll<HTMLAnchorElement>("a")] : [];
+    const pathThrough = (items: HTMLAnchorElement[]) => {
+      let d = "";
+      let px: number | undefined;
+      for (const a of items) {
+        const x = X[a.dataset.depth ?? "2"];
+        const top = a.offsetTop, bottom = top + a.offsetHeight;
+        if (px === undefined) d = `M${x} ${top}`;
+        else if (x !== px) d += ` L${x} ${top + 8}`;
+        d += ` L${x} ${bottom}`;
+        px = x;
+      }
+      return d;
+    };
+    const draw = () => {
+      if (!rail || !svg || !mask) return;
+      const h = rail.scrollHeight;
+      const d = pathThrough(railItems);
+      svg.setAttribute("width", "12");
+      svg.setAttribute("height", String(h));
+      svg.querySelector(".track")?.setAttribute("d", d);
+      const shape = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="${h}"><path d="${d}" fill="none" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>`)}")`;
+      mask.style.height = `${h}px`;
+      mask.style.maskImage = mask.style.webkitMaskImage = shape;
+      light();
+    };
+    // The light covers the headings on screen, or the last one above when none is (deep in a long section). A short
+    // page whose headings all fit lights them all, as Fumadocs does.
+    const light = () => {
+      if (!thumb || !railItems.length) return;
+      const on = heads.map((h) => { const r = h.getBoundingClientRect(); return r.bottom > 56 && r.top < innerHeight; });
+      let first = on.indexOf(true), last = on.lastIndexOf(true);
+      if (first < 0) first = last = Math.max(0, heads.findLastIndex((h) => h.getBoundingClientRect().top < 56));
+      railItems.forEach((a, i) => a.classList.toggle("active", i >= first && i <= last));
+      const a = railItems[first], b = railItems[last];
+      thumb.style.top = `${a.offsetTop}px`;
+      thumb.style.height = `${b.offsetTop + b.offsetHeight - a.offsetTop}px`;
+    };
+
+    const spy = () => {
+      light();
+      const line = innerHeight * 0.3;
+      const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      const h = atEnd ? heads.at(-1) : (heads.filter((h) => h.getBoundingClientRect().top < line).at(-1) ?? heads[0]);
+      if (!h || h.id === current) return;
+      current = h.id;
+      links.forEach((a) => (a.hash === `#${h.id}` ? a.setAttribute("aria-current", "location") : a.removeAttribute("aria-current")));
+      // The popover lists h2s only, so inside an h3 it marks the h2 above it.
+      const section = h.tagName === "H2" ? h : heads.slice(0, heads.indexOf(h)).reverse().find((x) => x.tagName === "H2");
+      onpage?.querySelectorAll("nav a").forEach((a) => (section && (a as HTMLAnchorElement).hash === `#${section.id}` ? a.setAttribute("aria-current", "location") : a.removeAttribute("aria-current")));
+    };
+    if (heads.length) {
+      let queued = false;
+      addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; spy(); }); } }, { passive: true });
+      addEventListener("resize", () => { draw(); spy(); });
+      document.fonts?.ready.then(draw);
+      draw();
+      spy();
+      // Picking a section on a narrow screen folds the list away again.
+      onpage?.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => (onpage.open = false)));
+
+      // Contents links (rail and popover) glide to their section: an eased scroll driven here rather than the
+      // browser's own smooth scroll, which some browsers skip for long jumps. Reduced motion jumps straight there.
+      let gliding = 0;
+      const glide = (to: number) => {
+        cancelAnimationFrame(gliding);
+        const from = scrollY, dist = to - from;
+        const ms = Math.min(700, 300 + Math.abs(dist) / 20);
+        const t0 = performance.now();
+        const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+        const step = (now: number) => {
+          const t = Math.min(1, (now - t0) / ms);
+          scrollTo({ top: from + dist * ease(t), behavior: "instant" });
+          if (t < 1) gliding = requestAnimationFrame(step);
+        };
+        gliding = requestAnimationFrame(step);
+      };
+      document.querySelectorAll<HTMLAnchorElement>(".rail nav a, .onpage nav a").forEach((a) =>
+        a.addEventListener("click", (e) => {
+          const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+          if (!target) return;
+          e.preventDefault();
+          history.pushState(null, "", a.hash);
+          const top = target.getBoundingClientRect().top + scrollY - parseFloat(getComputedStyle(target).scrollMarginTop || "0");
+          if (matchMedia("(prefers-reduced-motion: reduce)").matches) scrollTo({ top, behavior: "instant" });
+          else glide(Math.max(0, Math.min(top, document.documentElement.scrollHeight - innerHeight)));
+          target.focus?.({ preventScroll: true });
+        }),
+      );
+    }
+
+    // A copy button on each code block. The wrapper only positions it, so nothing moves.
+    const prose = document.querySelector<HTMLElement>(".prose")!;
+    prose.querySelectorAll("pre").forEach((pre) => {
+      const wrap = document.createElement("div");
+      wrap.className = "code";
+      const b = document.createElement("button");
+      b.className = "copy";
+      b.setAttribute("aria-label", "Copy code");
+      b.dataset.copy = pre.textContent ?? "";
+      b.innerHTML = prose.dataset.copyIcon!;
+      pre.replaceWith(wrap);
+      wrap.append(pre, b);
+    });
+  </script>
+
+  <style>
+    .docs { display: grid; grid-template-columns: 200px minmax(0, 640px); gap: 64px; justify-content: center; max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+    .side { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 96px 0 32px; scrollbar-width: none; }
+    .home { display: inline-block; margin: 0 0 32px 10px; }
+    .kmenu-open, .ask-open-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 0 0 24px; padding: 6px 6px 6px 10px; border: 0; border-radius: 8px; background: none; box-shadow: inset 0 0 0 1px var(--ring); color: var(--dim); font: inherit; font-size: 14px; cursor: pointer; transition: color 150ms; }
+    @media (hover: hover) { .kmenu-open:hover, .ask-open-btn:hover { color: var(--fg); } }
+    .kmenu-open:has(+ .ask-open-btn) { margin-bottom: 8px; }
+    .ask-key { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 12px; line-height: 16px; letter-spacing: 0.02em; color: var(--dim); border: 1px solid var(--ring); border-radius: 5px; padding: 1px 5px; }
+    .menu { view-transition-name: docs-nav; }
+    .menu-open, .menu-head, .menu-search { display: none; }
+    .group { margin-bottom: 24px; }
+    .group p { font: 0.75rem/1.5 var(--mono); color: var(--dim); margin: 0 0 6px; padding: 0 10px; }
+    .group a { display: block; padding: 4px 10px; border-radius: 8px; font-size: 0.875rem; line-height: 1.57; color: var(--muted); transition: color 150ms, background-color 150ms; }
+    @media (hover: hover) { .group a:hover { color: var(--fg); } }
+    .group a[aria-current] { color: var(--fg); background: rgb(var(--tint) / 0.06); }
+
+    main { padding: 96px 0 0; min-width: 0; }
+    h1 { font-size: 1.875rem; line-height: 1.2; font-weight: 550; letter-spacing: -0.025em; margin: 0 0 8px; }
+    .desc { margin-bottom: 32px; color: var(--muted); }
+    /* On this page, narrow screens: an icon button beside the title, opening a popover of the page's sections.
+       The section being read is the bright one. */
+    .head-actions { flex: none; display: flex; gap: 8px; margin-top: 4px; }
+    .onpage { position: relative; }
+    .onpage summary { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--ring); color: var(--muted); cursor: pointer; list-style: none; transition: color 150ms, background-color 150ms; }
+    .onpage summary::-webkit-details-marker { display: none; }
+    @media (hover: hover) { .onpage summary:hover { color: var(--fg); background: rgb(var(--tint) / 0.04); } }
+    .onpage[open] summary { color: var(--fg); }
+    .onpage nav { position: absolute; top: calc(100% + 6px); right: 0; z-index: 25; display: flex; flex-direction: column; width: min(260px, calc(100vw - 48px)); max-height: min(60vh, 420px); overflow-y: auto; padding: 10px 6px 6px; border-radius: 12px; background: var(--raise); box-shadow: 0 0 0 1px var(--ring), 0 12px 32px rgb(0 0 0 / 0.3); transform-origin: top right; transition: opacity 150ms var(--ease-out), scale 150ms var(--ease-out); }
+    @starting-style { .onpage[open] nav { opacity: 0; scale: 0.97; } }
+    .onpage nav p { margin: 0 8px 4px; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+    .onpage nav a { padding: 6px 8px; border-radius: 6px; font-size: 0.875rem; line-height: 1.4; color: var(--muted); transition: color 150ms; }
+    @media (hover: hover) { .onpage nav a:hover { color: var(--fg); } }
+    .onpage nav a[aria-current] { color: var(--fg); }
+
+    /* On this page, wide screens: a rail in its own column. A hairline runs down it and a brighter segment marks
+       the section being read, sliding as you scroll. */
+    .rail { display: none; }
+    @media (min-width: 1200px) {
+      .docs { grid-template-columns: 200px minmax(0, 640px) 176px; max-width: 1200px; }
+      .onpage { display: none; }
+      .rail { display: block; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 96px 0 32px; scrollbar-width: none; }
+      .rail p { font: 0.75rem/1.5 var(--mono); color: var(--dim); margin: 0 0 10px; }
+      .rail nav { position: relative; display: flex; flex-direction: column; }
+      .rail a { padding: 5px 0 5px 16px; font-size: 0.8125rem; line-height: 1.4; color: var(--dim); transition: color 150ms; }
+      .rail a[data-depth="3"] { padding-left: 28px; }
+      @media (hover: hover) { .rail a:hover { color: var(--fg); } }
+      .rail a.active { color: var(--fg); }
+      .rail .line { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+      .rail .line path { fill: none; stroke-width: 1; stroke-linejoin: round; }
+      .rail .track { stroke: var(--ring); }
+      .rail .thumb-mask { position: absolute; top: 0; left: 0; width: 12px; pointer-events: none; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; }
+      .rail .thumb { position: absolute; left: 0; right: 0; top: 0; height: 0; background: var(--fg); transition: top 200ms var(--ease-out), height 200ms var(--ease-out); }
+      @media (prefers-reduced-motion: reduce) { .rail .thumb { transition: none; } }
+    }
+
+    .prose { color: var(--text); }
+    .prose :global(h2) { margin: 64px 0 16px; scroll-margin-top: 32px; }
+    .prose :global(h3) { font-size: 1.0625rem; line-height: 1.53; font-weight: 550; color: var(--fg); margin: 40px 0 8px; }
+    .prose :global(ul), .prose :global(ol) { font-size: 1.0625rem; line-height: 1.53; margin: 0 0 16px; padding-left: 20px; }
+    .prose :global(li) { margin: 6px 0; }
+    .prose :global(li::marker) { color: var(--dim); }
+    .prose :global(a) { color: var(--fg); text-decoration: underline; text-decoration-color: var(--dim); text-underline-offset: 3px; }
+    .prose :global(a:hover) { text-decoration-color: var(--fg); }
+    .prose :global(strong) { color: var(--fg); font-weight: 550; }
+    .prose :global(blockquote) { margin: 0 0 16px; padding: 12px 16px; border-radius: 10px; background: var(--raise); box-shadow: inset 0 0 0 1px var(--ring); }
+    .prose :global(blockquote p) { margin: 0; font-size: 0.9375rem; line-height: 1.53; }
+
+    /* Code blocks and tables get the card look in CSS alone: a raised 4px frame around a dark panel. */
+    .prose :global(pre), .prose :global(.table) {
+      margin: 4px 4px 20px;
+      border-radius: 10px;
+      background: var(--panel) !important;
+      box-shadow: 0 0 0 1px rgb(var(--tint) / 0.04), 0 0 0 4px var(--raise), 0 0 0 5px var(--ring);
+    }
+    .prose :global(pre) { padding: 16px 48px 16px 16px; font: 0.8125rem/1.5 var(--mono); overflow-x: auto; }
+    .prose :global(.code) { position: relative; }
+    .prose :global(.code .copy) { position: absolute; top: 10px; right: 10px; }
+
+    /* The wrapper scrolls; the table keeps table layout so its rows fill the card. */
+    .prose :global(.table) { overflow-x: auto; }
+    /* Tabular digits so scores and costs line up down a column; words in the same cells are unaffected. */
+    .prose :global(table) { width: 100%; border-collapse: collapse; font-size: 0.875rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+    .prose :global(th) { text-align: left; vertical-align: bottom; font-weight: 500; color: var(--dim); padding: 12px 16px 6px; }
+    .prose :global(td) { padding: 8px 16px; vertical-align: top; color: var(--muted); }
+    .prose :global(tbody tr:nth-child(odd) td) { background: rgb(var(--tint) / 0.02); }
+    .prose :global(tbody tr:last-child td) { padding-bottom: 12px; }
+    .prose :global(td:first-child) { white-space: nowrap; color: var(--fg); }
+    /* Reference tables (up to 3 columns) end in a description that should not be squeezed to a sliver. */
+    .prose :global(table:not(:has(th:nth-child(4))) td:last-child) { min-width: 240px; }
+    /* Wide score tables (7+ columns) get tighter cells so they fit the column instead of scrolling. */
+    .prose :global(table:has(th:nth-child(7)) :is(th, td):not(:first-child)) { padding-left: 10px; padding-right: 10px; }
+    @media (max-width: 639px) {
+      .prose :global(:is(th, td)) { padding-left: 10px; padding-right: 10px; }
+      .prose :global(:is(th, td):first-child) { padding-left: 14px; }
+      .prose :global(table:not(:has(th:nth-child(4))) td:last-child) { min-width: 160px; }
+    }
+    /* A first cell listing several code items wraps between them; each item stays on one line. */
+    .prose :global(td:first-child:has(code)) { white-space: normal; }
+    .prose :global(td:first-child code) { white-space: nowrap; }
+    .prose :global(td code) { background: none; border: 0; padding: 0; font-size: 0.8125rem; line-height: 1.6; }
+    .prose :global(td:not(:first-child) code) { color: var(--muted); }
+
+    .pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 72px; }
+    .pager a { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: 12px; background: var(--raise); box-shadow: 0 0 0 1px var(--ring); font-size: 15px; font-weight: 500; min-width: 160px; transition: background-color 150ms; }
+    @media (hover: hover) { .pager a:hover { background: rgb(var(--tint) / 0.06); } }
+    .pager a span { font-size: 12px; font-weight: 400; color: var(--dim); }
+    .pager .nx { text-align: right; margin-left: auto; }
+
+    @media (max-width: 959px) {
+      .docs { grid-template-columns: minmax(0, 640px); gap: 0; }
+      /* A header row (wordmark, Ask AI) over a slim Menu row with a hairline across the page. */
+      .side { position: static; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; max-height: none; overflow: visible; padding: 16px 0 0; }
+      .home { margin: 0; }
+      .side > .kmenu-open { display: none; }
+      .side > .ask-open-btn { width: auto; margin: 0; padding: 6px 12px; color: var(--fg); font-weight: 500; }
+      .side > .ask-open-btn .ask-key { display: none; }
+      .menu-open { display: flex; align-items: center; gap: 10px; flex-basis: calc(100% + 48px); margin: 16px -24px 0; padding: 12px 24px; border: 0; background: none; box-shadow: 0 1px 0 var(--ring); color: var(--fg); font: inherit; font-size: 0.9375rem; cursor: pointer; }
+      .menu-open svg { color: var(--muted); }
+      .menu-open:focus-visible { outline-offset: -2px; }
+
+      /* The docs menu: a drawer that slides in from the left, on the iOS sheet curve. */
+      .menu { position: fixed; inset: 0 auto 0 0; z-index: 40; width: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 0 8px 32px; background: var(--bg); box-shadow: 1px 0 0 var(--ring); transform: translateX(-100%); visibility: hidden; transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s 300ms; }
+      .menu.open { transform: none; visibility: visible; transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1); }
+      @media (prefers-reduced-motion: reduce) { .menu, .menu.open { transition: none; } }
+      :global(html.sheet-open) { overflow: hidden; }
+      .menu-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 56px; margin: 0 -8px; padding: 0 12px 0 16px; background: var(--bg); box-shadow: 0 1px 0 var(--ring); font-size: 0.9375rem; font-weight: 550; color: var(--fg); }
+      .menu-close { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--muted); cursor: pointer; }
+      .menu-close::before { content: ""; position: absolute; inset: -6px; }
+      .menu .menu-search { display: flex; margin: 12px 0 20px; }
+      .group { margin: 0 0 20px; }
+      .group p { margin-bottom: 4px; }
+      .group a { padding: 9px 10px; font-size: 0.875rem; }
+      main { padding-top: 32px; }
+      .pager a { min-width: 0; }
+    }
+
+    /* Page actions: a split button beside the title, its menu dropping from the right edge. */
+    .doc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .doc-head h1 { min-width: 0; }
+    .page-actions { position: relative; flex: none; display: flex; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--ring); }
+    .page-actions > button { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.8125rem; cursor: pointer; transition: color 150ms, background-color 150ms; }
+    .page-actions > .pa-copy { border-radius: 8px 0 0 8px; }
+    .page-actions > .pa-more { padding: 0 8px; border-radius: 0 8px 8px 0; box-shadow: inset 1px 0 0 var(--ring); }
+    @media (hover: hover) { .page-actions > button:hover { color: var(--fg); background: rgb(var(--tint) / 0.04); } }
+    /* Each half is 32px to look at and 40px to hit. */
+    .page-actions > button { position: relative; }
+    .page-actions > button::before { content: ""; position: absolute; inset: -4px 0; }
+    .page-actions > button:active { background: rgb(var(--tint) / 0.08); }
+    .pa-more svg { transition: rotate 200ms var(--ease-out); }
+    .pa-more[aria-expanded="true"] { color: var(--fg); }
+    .pa-more[aria-expanded="true"] svg { rotate: 180deg; }
+    /* Copied: the copy icon gives way to a check (opacity, scale and blur together, both kept in the DOM). */
+    .pa-icon { position: relative; display: grid; width: 14px; height: 14px; }
+    .pa-icon :global(svg) { grid-area: 1 / 1; transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1), scale 200ms cubic-bezier(0.2, 0, 0, 1), filter 200ms cubic-bezier(0.2, 0, 0, 1); }
+    .pa-icon :global(svg:last-child), .pa-copy.done .pa-icon :global(svg:first-child) { opacity: 0; scale: 0.25; filter: blur(4px); }
+    .pa-copy.done .pa-icon :global(svg:last-child) { opacity: 1; scale: 1; filter: blur(0); }
+    .pa-copy.done { color: var(--fg); }
+
+    /* The menu: rows with a leading icon or logo. It enters and leaves with a
+       short fade and scale from the button's corner. Radius 12 outside, 4 padding, so the rows are 8. */
+    .pa-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 25; width: 304px; padding: 4px; border-radius: 12px; background: var(--raise); box-shadow: 0 0 0 1px var(--ring), 0 12px 32px rgb(0 0 0 / 0.3); transform-origin: top right; transition: opacity 150ms var(--ease-out), scale 150ms var(--ease-out), display 150ms allow-discrete; }
+    @starting-style { .pa-menu:not([hidden]) { opacity: 0; scale: 0.97; } }
+    .pa-menu[hidden] { display: none; opacity: 0; scale: 0.97; }
+    .pa-menu > :is(a, button) { display: grid; grid-template-columns: 16px 1fr auto; column-gap: 10px; row-gap: 1px; align-items: center; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px; background: none; text-align: start; font: inherit; color: var(--fg); cursor: pointer; transition: background-color 120ms; }
+    .pa-menu > :is(a, button) > :global(svg:first-child) { grid-row: 1 / 3; align-self: start; margin-top: 2px; color: var(--muted); }
+    .pa-menu > :is(a, button) > :global(svg:last-child:not(:first-child)) { grid-column: 3; grid-row: 1 / 3; color: var(--dim); }
+    .pa-menu strong { grid-column: 2; font-size: 0.875rem; line-height: 1.4; font-weight: 500; }
+    .pa-menu span { grid-column: 2; font-size: 0.75rem; line-height: 1.4; color: var(--dim); }
+    .pa-menu > :is(a, button):is(:hover, :focus-visible) { background: rgb(var(--tint) / 0.06); outline: none; }
+    .pa-menu > :is(a, button):is(:hover, :focus-visible) > :global(svg) { color: var(--fg); }
+    .pa-menu > :is(a, button):active { background: rgb(var(--tint) / 0.09); }
+    @media (prefers-reduced-motion: reduce) { .pa-menu, .pa-more svg, .pa-icon :global(svg) { transition: none; } }
+    @media (max-width: 600px) { .pa-label { display: none; } .page-actions > .pa-copy { padding: 0 9px; } }
+
+    .helpful { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 56px; font-size: 0.875rem; color: var(--muted); }
+    .helpful-q { margin-right: 4px; }
+    .helpful button { height: 30px; padding: 0 12px; border: 0; border-radius: 8px; background: none; box-shadow: inset 0 0 0 1px var(--ring); color: var(--muted); font: inherit; cursor: pointer; transition: color 150ms, transform 100ms var(--ease-out); }
+    .helpful button:not(:disabled):hover { color: var(--fg); }
+    .helpful button:not(:disabled):active { transform: scale(0.96); }
+    .helpful button:disabled { opacity: 0.5; cursor: default; }
+    .helpful-thanks { color: var(--dim); }
+    .helpful + .pager { margin-top: 32px; }
+
+    /* Under the rail: back to the top, and a way into Ask AI. */
+    .rail-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 20px; padding-top: 16px; box-shadow: 0 -1px 0 var(--ring); }
+    .rail-actions button { display: flex; align-items: center; gap: 8px; padding: 4px 0; border: 0; background: none; color: var(--dim); font: inherit; font-size: 0.8125rem; cursor: pointer; transition: color 150ms; }
+    @media (hover: hover) { .rail-actions button:hover { color: var(--fg); } }
+  </style>
+</Page>

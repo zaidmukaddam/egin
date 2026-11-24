@@ -1,0 +1,8 @@
+description = "GitHub: answers @mentions in issue and pull request comments, one session per issue"
+env = ["GITHUB_WEBHOOK_SECRET", "GITHUB_TOKEN", "GITHUB_BOT_LOGIN"]
+next = """
+Set GITHUB_BOT_LOGIN to the account the token belongs to, and pick a secret: openssl rand -hex 32
+Run `egin serve` on a public HTTPS URL, then in the repository: Settings → Webhooks → Add webhook,
+payload URL https://<your server>/channels/github, content type application/json, the secret, and the
+events "Issue comments" and "Pull request review comments"."""
+docs = "https://egin.dev/docs/channels#github"

@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+// The public docs assistant may only search and read the docs. Every other tool call is refused, and any
+// read_file outside workspace/docs (after resolving symlinks and ..) is too. Node, not Python: it runs in
+// a Vercel function, where Node is the one interpreter there is.
+import fs from "node:fs";
+import path from "node:path";
+
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
+let call = {};
+try { call = JSON.parse(input); } catch {}
+const args = call.args || {};
+if (call.tool === "search_files") process.exit(0);
+if (call.tool === "read_file") {
+  const workspace = path.join(import.meta.dirname, "..", "workspace");
+  const real = (p) => { try { return fs.realpathSync(p); } catch { return null; } };
+  const docs = real(path.join(workspace, "docs"));
+  const target = real(path.join(workspace, String(args.path || "").replace(/^\/workspace\//, "")));
+  if (docs && target && target.startsWith(docs + path.sep) && target.endsWith(".md")) process.exit(0);
+}
+console.log("Refused: this assistant can only search_files and read_file pages in docs/.");
+process.exit(1);

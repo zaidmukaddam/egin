@@ -1,0 +1,4 @@
+category = "research"
+split = "heldout"
+prompt = "Look up the architectural height of the Burj Khalifa in metres and write it as a plain integer (digits only) to answer.txt."
+check = "test \"$(tr -d '[:space:]' < answer.txt)\" = 828"

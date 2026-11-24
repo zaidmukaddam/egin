@@ -1,0 +1,14 @@
+# GAIA validation: real-world questions needing web research, files and multi-step reasoning.
+# Build with bench/gaia/prepare.py, then: egin eval <out> --model <id>
+model = "deepseek-v4.1-flash"
+web = "client"
+approval = "never"
+max_turns = 50
+max_cost = 1.0
+# GAIA's validation answers are republished on Hugging Face (and its mirrors), and web search finds them:
+# a first run hit answer pages in 53 sessions. Block them for search and fetch, and give bash package
+# installs only, so the answer key cannot be fetched from a script either.
+exclude_domains = ["huggingface.co", "hf.co", "hf-mirror.com", "modelscope.cn", "harborframework.com"]
+# prepare.py appends exclude_terms: "GAIA" and every validation task id, so pages that copy the answers
+# from anywhere else are withheld too (a second run still saw its own task id in 29 of 169 sessions).
+network = ["pypi.org", "files.pythonhosted.org"]

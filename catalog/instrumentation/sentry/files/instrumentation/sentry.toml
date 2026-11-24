@@ -1,0 +1,3 @@
+# Spans go to Sentry's OTLP endpoint. ${VAR} reads the host's environment when a span is sent.
+endpoint = "${SENTRY_OTLP_TRACES_ENDPOINT}"
+headers = { x-sentry-auth = "sentry sentry_key=${SENTRY_PUBLIC_KEY}" }

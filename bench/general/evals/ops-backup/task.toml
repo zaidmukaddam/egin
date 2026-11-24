@@ -1,0 +1,3 @@
+category = "ops"
+prompt = "Write an executable script backup.sh that archives the data/ directory into backups/data-<YYYYMMDD>.tar.gz (today's date, creating backups/ if needed), and prints the archive path. Run it once."
+check = "test -x backup.sh && f=$(ls backups/data-*.tar.gz | head -1) && tar -tzf \"$f\" | grep -q 'data/orders/2026-11.csv' && tar -tzf \"$f\" | grep -q 'data/users.db.txt'"

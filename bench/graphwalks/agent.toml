@@ -1,0 +1,9 @@
+# GraphWalks: BFS and parent queries over graphs of up to 128K tokens.
+# Build with bench/graphwalks/prepare.py, then: egin eval <out> --model <id>
+model = "deepseek-v4.1-flash"
+web = "off"
+approval = "never"
+max_turns = 20
+max_cost = 0.50
+# No network for bash: the graphs and their answers are published (openai/graphwalks), and nothing here needs it.
+network = []

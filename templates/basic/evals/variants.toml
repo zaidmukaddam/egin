@@ -1,0 +1,5 @@
+# Each table is a set of agent.toml overrides; every eval runs once per variant.
+[default]
+
+[bash-only]
+tool_style = "bash"

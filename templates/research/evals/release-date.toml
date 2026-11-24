@@ -1,0 +1,2 @@
+prompt = "In what year was the first stable version (1.0) of the Go programming language released? Reply with the year only."
+expect = "2012"

@@ -1,0 +1,6 @@
+description = "Slack: answers mentions and direct messages in threads, over Socket Mode"
+env = ["SLACK_APP_TOKEN", "SLACK_BOT_TOKEN"]
+next = """
+Create the Slack app from slack-manifest.json: api.slack.com/apps → Create New App → From a manifest.
+Then copy its App-Level Token (connections:write) and Bot User OAuth Token, and run `egin serve`. Socket Mode needs no public URL."""
+docs = "https://egin.dev/docs/channels#slack"

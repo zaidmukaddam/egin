@@ -1,0 +1,58 @@
+[package]
+name = "egin"
+version = "0.1.0"
+edition = "2021"
+description = "Filesystem-first framework for durable backend agents"
+license = "MIT"
+homepage = "https://egin.dev"
+repository = "https://github.com/zaidmukaddam/egin"
+documentation = "https://egin.dev/docs"
+readme = "README.md"
+keywords = ["agent", "llm", "ai", "sandbox", "mcp"]
+categories = ["command-line-utilities", "development-tools"]
+# What the crate needs to build: the source and the folders it embeds (templates, the `egin add` catalog, the docs
+# `egin docs` prints). The rest of the repository (bench/ alone is gigabytes) stays out of the package.
+include = ["/src/**", "/templates/**", "/catalog/**", "/site/src/content/docs/**", "/Cargo.toml", "/Cargo.lock", "/README.md"]
+
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+base64 = "0.22"
+# Documents read_file turns into text: spreadsheets, PDFs, and the XML inside .docx/.pptx.
+calamine = "0.38"
+pdf-extract = "0.12"
+quick-xml = "0.42"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+chrono = "0.4.45"
+clap = { version = "4", features = ["derive"] }
+croner = "4.0.3"
+futures-util = "0.3"
+hex = "0.4.3"
+hmac = "0.12"
+libc = "0.2"
+# Pinned: microsandbox is beta and breaks between versions. Bump deliberately and run
+# `cargo test --test sandbox` (HAR-19c).
+microsandbox = { version = "=0.7.15", default-features = false, features = ["local", "net", "download-binaries"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "multipart"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["full"] }
+# Both ring and aws-lc-rs end up enabled through dependencies; main() picks ring explicitly.
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
+# Ed25519 for Discord interaction signatures; already in the tree through rustls.
+ring = "0.17"
+# Slack Socket Mode (the agent dials out; no public URL needed).
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-webpki-roots"] }
+toml = "0.8"
+include_dir = "0.7.4"
+# `egin chat`'s fullscreen terminal UI.
+ratatui = "0.30"
+crossterm = { version = "0.29", features = ["event-stream"] }
+pulldown-cmark = { version = "0.13", default-features = false }
+unicode-width = "0.2"
+
+[dev-dependencies]
+# Paused time for the rate-limit breaker's test.
+tokio = { version = "1", features = ["full", "test-util"] }

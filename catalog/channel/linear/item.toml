@@ -1,0 +1,7 @@
+description = "Linear: answers comments on issues, one session per issue (a described channel)"
+env = ["LINEAR_WEBHOOK_SECRET", "LINEAR_API_KEY", "LINEAR_AGENT_USER_ID"]
+next = """
+In Linear: Settings → API → Webhooks → New webhook, URL https://<your server>/channels/linear, events: Comments.
+Copy its signing secret to LINEAR_WEBHOOK_SECRET. Create a personal API key (for the account the agent posts as)
+for LINEAR_API_KEY, and set LINEAR_AGENT_USER_ID to that account's user id so the agent ignores its own comments."""
+docs = "https://egin.dev/docs/channels#described-channels"

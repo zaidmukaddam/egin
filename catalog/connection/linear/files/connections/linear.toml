@@ -1,0 +1,3 @@
+# Linear's MCP server. Its tools reach the model as linear__<tool>.
+url = "https://mcp.linear.app/mcp"
+headers = { Authorization = "Bearer ${LINEAR_API_KEY}" }

@@ -1,0 +1,6 @@
+node_modules/
+.next/
+next-env.d.ts
+.env*.local
+# Sessions, uploads and the agent's working files.
+agent/.egin/

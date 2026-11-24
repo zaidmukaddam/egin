@@ -1,0 +1,22 @@
+target/
+.env
+.env.*
+.egin/
+node_modules/
+__pycache__/
+.DS_Store
+
+# Build output
+site/dist/
+site/.astro/
+site/.vercel/
+site/.swc/
+site/.workflow-data/
+site/bin/
+npm/egin/dist/
+npm/egin/bin/*/
+
+# Bench run output
+bench/*/evals/results/
+bench/*/evals/evolve/
+bench/eve-arm/.eve/

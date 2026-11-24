@@ -1,0 +1,30 @@
+---
+// A benchmark chart in the same card as the code samples: a header strip naming the run, the chart inside the
+// panel, and a one-line note under the plot.
+import { renderChart } from "../lib/charts.mjs";
+
+const { title, sub, note, spec } = Astro.props as { title: string; sub?: string; note?: string; spec: Record<string, unknown> };
+---
+<div class="card bench-card">
+  <div class="head">
+    <span class="file">{title}</span>
+    {sub && <span class="bench-sub">{sub}</span>}
+  </div>
+  <div class="panel bench-panel">
+    <Fragment set:html={renderChart(spec)} />
+    {note && <p class="bench-note">{note}</p>}
+  </div>
+</div>
+
+<style>
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 12px 10px; }
+  .file { font: 0.8125rem/1.54 var(--mono); color: var(--muted); }
+  .bench-sub { font: 0.75rem/1.5 var(--mono); color: var(--dim); white-space: nowrap; }
+  .bench-panel { padding: 20px 20px 12px; }
+  .bench-panel :global(.chart) { margin: 0; --name: 8.5rem; }
+  .bench-note { margin: 8px 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--dim); }
+  @media (max-width: 480px) {
+    .bench-panel { padding: 16px 14px 10px; }
+    .bench-panel :global(.chart) { --name: 0px; }
+  }
+</style>

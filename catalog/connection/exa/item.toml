@@ -1,0 +1,3 @@
+description = "Exa's MCP server: web search and page fetching"
+next = "Search and fetch work without a key at a free rate limit. For more, set EXA_API_KEY and uncomment the header."
+docs = "https://exa.ai/docs/get-started/exa-mcp"

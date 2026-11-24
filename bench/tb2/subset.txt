@@ -1,0 +1,24 @@
+# Fixed 20-task Terminal-Bench 2 subset (HAR-27/28/29).
+# Rule: easy and medium tasks whose reference solution passed on the rebuilt arm64 environment
+# (`egin bench <tb2> --oracle`, 42 of the 52 that finished), sorted by name, every second one,
+# first 20. Hard tasks and tasks whose environment could not be rebuilt are excluded.
+adaptive-rejection-sampler
+cobol-modernization
+compile-compcert
+count-dataset-tokens
+db-wal-recovery
+dna-insert
+filter-js-from-html
+git-leak-recovery
+headless-terminal
+kv-store-grpc
+largest-eigenval
+mailman
+modernize-scientific-stack
+nginx-request-logging
+overfull-hbox
+portfolio-optimization
+pypi-server
+pytorch-model-recovery
+regex-log
+schemelike-metacircular-eval

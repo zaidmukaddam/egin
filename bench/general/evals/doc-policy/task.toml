@@ -1,0 +1,3 @@
+category = "documents"
+prompt = "Under handbook/, find how many days of written notice an employee must give to resign while still in their probation period. Reply with the number of days only."
+expect = "7"

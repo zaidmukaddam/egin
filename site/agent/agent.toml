@@ -1,0 +1,13 @@
+# The docs assistant behind Ask AI on egin.dev. Anyone can type into it, so it only reads the docs:
+# middleware/pre_tool refuses every call but read_file and search_files inside workspace/docs.
+model = "claude-haiku-5-5"
+reasoning_effort = "low"
+max_tokens = 1500
+index = true
+web = "off"
+sandbox = "local"
+network = []
+# Nothing it can do needs a human: the middleware is the gate.
+approval = "never"
+max_turns = 8
+max_cost = 0.25

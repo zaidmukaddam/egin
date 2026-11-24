@@ -1,0 +1,12 @@
+# An MCP server. The file name prefixes its tools: my-server__<tool>. Use one of:
+
+# A remote server, over streamable HTTP. ${VAR} reads the host's environment.
+url = "https://example.com/mcp"
+headers = { Authorization = "Bearer ${MY_SERVER_TOKEN}" }
+
+# Or a local server, started on the host over stdio:
+# command = ["npx", "-y", "some-mcp-server"]
+# env = { SOME_KEY = "${SOME_KEY}" }
+
+# Tools that only read can skip approval:
+# safe = ["search", "get"]

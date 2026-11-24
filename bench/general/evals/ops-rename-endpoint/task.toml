@@ -1,0 +1,3 @@
+category = "ops"
+prompt = "Our API moved from https://api.old-example.com to https://api.example.net. Update every reference under services/, but leave archive/ untouched. Reply with how many files you changed."
+check = "! grep -rq 'api.old-example.com' services/ && grep -q 'api.old-example.com' archive/2024-config.yaml && test $(grep -rl 'https://api.example.net' services/ | wc -l) -eq 3"

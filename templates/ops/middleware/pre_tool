@@ -1,0 +1,8 @@
+#!/bin/sh
+# Runs on the host before every tool call with {"tool", "args"} on stdin.
+# A non-zero exit blocks the call and its output is shown to the model.
+input=$(cat)
+if printf '%s' "$input" | grep -Eq 'rm -rf|mkfs|dd if=|shutdown|reboot|:\(\)\{'; then
+  echo "destructive command blocked by policy; ask a human"
+  exit 1
+fi

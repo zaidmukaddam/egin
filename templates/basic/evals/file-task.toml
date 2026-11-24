@@ -1,0 +1,2 @@
+prompt = "Create a file named hello.txt in the working directory containing exactly the text: egin"
+check = "test \"$(cat hello.txt)\" = egin"

@@ -1,0 +1,10 @@
+{
+  "name": "egin-eve-arm",
+  "private": true,
+  "type": "module",
+  "description": "eve's default harness as a comparison arm for `egin bench` and `egin eval` (HAR-32)",
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "3.0.92",
+    "eve": "1.0.2"
+  }
+}

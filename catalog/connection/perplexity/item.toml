@@ -1,0 +1,4 @@
+description = "Perplexity's MCP server: Sonar search and answers"
+env = ["PERPLEXITY_API_KEY"]
+next = "Create an API key at console.perplexity.ai."
+docs = "https://docs.perplexity.ai/guides/mcp-server"

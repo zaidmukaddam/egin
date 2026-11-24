@@ -1,0 +1,2 @@
+# POST /channels/webhook with X-Egin-Signature: sha256=<HMAC-SHA256 of the body using this secret>.
+secret = "${OPS_WEBHOOK_SECRET}"

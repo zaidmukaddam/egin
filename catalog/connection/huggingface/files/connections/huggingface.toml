@@ -1,0 +1,4 @@
+# Hugging Face's MCP server. Its tools reach the model as huggingface__<tool>.
+url = "https://huggingface.co/mcp"
+# A token unlocks the full tool set:
+# headers = { Authorization = "Bearer ${HF_TOKEN}" }

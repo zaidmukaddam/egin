@@ -1,0 +1,4 @@
+description = "Browserbase's MCP server: cloud browsers driven by Stagehand"
+env = ["BROWSERBASE_API_KEY"]
+next = "Copy your API key from the Browserbase dashboard. Browserbase takes it only in the URL, so it can show up in request logs."
+docs = "https://docs.browserbase.com/integrations/mcp/setup"

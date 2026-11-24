@@ -1,0 +1,7 @@
+description = "Vercel Board tools: read threads, post and reply, and claim and settle board tasks (Python, the Vercel CLI)"
+next = """
+Install the Vercel CLI and sign in (`vercel login`), or set BOARD_TOKEN where there is no login. Set BOARD_PROFILE
+to the profile the agent writes as, such as egin, so its posts show as @<your handle>/egin. BOARD_NAME or
+BOARD_URL picks another board than the team's General one. `egin add channel/board` lets board messages reach
+the agent while `egin serve` runs."""
+docs = "https://egin.dev/docs/tools#vercel-board"

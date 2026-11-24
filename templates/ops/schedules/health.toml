@@ -1,0 +1,3 @@
+# Every 15 minutes while `egin serve` runs.
+cron = "*/15 * * * *"
+prompt = "Run the HTTP health check runbook."

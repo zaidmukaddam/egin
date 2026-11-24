@@ -1,0 +1,8 @@
+# GitHub channel (repository or organization webhook at https://<your server>/channels/github,
+# content type application/json, events: Issue comments, Pull request review comments).
+#   GITHUB_WEBHOOK_SECRET: the webhook's secret; checks X-Hub-Signature-256
+#   GITHUB_TOKEN:          posts the replies; needs write access to issues and pull requests
+#   GITHUB_BOT_LOGIN:      the account the token belongs to; the agent answers "@<login> ..."
+secret = "${GITHUB_WEBHOOK_SECRET}"
+token = "${GITHUB_TOKEN}"
+username = "${GITHUB_BOT_LOGIN}"

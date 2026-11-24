@@ -1,0 +1,9 @@
+{
+  "name": "egin-pi-arm",
+  "private": true,
+  "type": "module",
+  "description": "pi v0.83.0, the harness in the Inkling 2 Mini model card's Terminal-Bench 2.1 row, as a comparison arm for `egin bench`",
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "0.83.0"
+  }
+}

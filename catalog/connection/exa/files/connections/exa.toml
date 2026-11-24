@@ -1,0 +1,3 @@
+# Exa's MCP server. Its tools reach the model as exa__<tool>.
+url = "https://mcp.exa.ai/mcp"
+# headers = { x-api-key = "${EXA_API_KEY}" }

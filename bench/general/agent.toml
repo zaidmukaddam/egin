@@ -1,0 +1,8 @@
+# General-agent eval suite (HAR-39): research, documents, multi-step ops.
+# Run: egin eval bench/general --model <id>
+model = "kimi-k3.1-pro"
+web = "client"
+index = true
+approval = "never"
+max_turns = 40
+max_cost = 0.50

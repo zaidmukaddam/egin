@@ -1,0 +1,10 @@
+search_mode = "highlights"
+search_count = 8
+planning = true
+# Findings and source quality notes carry across sessions.
+memory_max = 6000
+# Reports and downloaded sources in workspace/ are searchable with search_files.
+index = true
+approval = "never"
+# Tools run in a microVM with no network; research goes through web_search / web_fetch.
+network = []

@@ -1,0 +1,8 @@
+# The context switches. They only matter in --mode file, where the graph arrives through tools.
+[egin]
+
+[no-compaction]
+compaction = false
+
+[no-elision]
+elision = false

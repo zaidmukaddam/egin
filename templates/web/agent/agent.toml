@@ -1,0 +1,7 @@
+# Shell commands and file writes wait for a click in the web app.
+approval = "ask"
+# The agent can ask you a question in the chat and wait for the answer.
+ask = true
+max_cost = 1.0
+# Models the chat's picker offers besides `model`, for example:
+# models = ["anthropic/claude-sonnet-5-5", "openai/gpt-6-luna"]

@@ -1,0 +1,3 @@
+category = "documents"
+prompt = "Which documents under tickets/ mention the part number QX-4471? Write their file names (just the name, e.g. t03.md), one per line, sorted, to found.txt."
+check = "test \"$(sort found.txt | tr -d ' ' | grep -v '^$' | xargs)\" = 't02.md t05.md t08.md'"

@@ -1,0 +1,4 @@
+category = "ops"
+split = "heldout"
+prompt = "The service will not start: `python3 validate.py` fails on config.json. Fix config.json (not validate.py) so validation passes, keeping every existing setting's intent."
+check = "python3 validate.py && python3 -c 'import json; c=json.load(open(\"config.json\")); assert c[\"port\"]==8080 and c[\"workers\"]==4 and c[\"log_level\"]==\"info\"'"

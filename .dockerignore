@@ -1,0 +1,8 @@
+target
+site
+npm
+bench
+tests
+.env*
+**/.egin
+**/node_modules

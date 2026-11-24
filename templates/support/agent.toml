@@ -1,0 +1,7 @@
+web = "off"
+# Answers come from the knowledge base in workspace/kb, found with search_files.
+index = true
+memory_max = 4000
+approval = "never"
+network = []
+max_turns = 20

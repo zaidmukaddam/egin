@@ -1,0 +1,6 @@
+{
+  "name": "egin-fx-arm",
+  "private": true,
+  "type": "module",
+  "description": "fx 0.0.17 (Vercel Labs), run inside the task's Daytona sandbox as a comparison arm for `egin bench`"
+}

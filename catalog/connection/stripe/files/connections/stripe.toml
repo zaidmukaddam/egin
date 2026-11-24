@@ -1,0 +1,3 @@
+# Stripe's MCP server. Its tools reach the model as stripe__<tool>.
+url = "https://mcp.stripe.com"
+headers = { Authorization = "Bearer ${STRIPE_AGENT_API_KEY}" }

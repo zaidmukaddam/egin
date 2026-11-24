@@ -1,0 +1,8 @@
+category = "documents"
+split = "heldout"
+prompt = "Join data/customers.csv and data/orders.csv and write revenue.csv with header country,revenue giving total order amount per customer country, sorted by revenue descending. Ignore orders whose status is refunded."
+check = """python3 - <<'EOF'
+import csv
+rows = [(r["country"].strip(), round(float(r["revenue"]), 2)) for r in csv.DictReader(open("revenue.csv"))]
+assert rows == [("DE", 410.0), ("US", 245.5), ("FR", 99.99)], rows
+EOF"""

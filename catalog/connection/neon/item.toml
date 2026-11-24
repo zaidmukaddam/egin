@@ -1,0 +1,4 @@
+description = "Neon's MCP server: Postgres projects, branches and SQL"
+env = ["NEON_API_KEY"]
+next = "Create an API key in the Neon Console: Account or organization settings → API keys."
+docs = "https://neon.com/docs/ai/neon-mcp-server"

@@ -1,0 +1,8 @@
+description = "Discord: answers an /ask slash command, one session per channel"
+env = ["DISCORD_PUBLIC_KEY", "DISCORD_BOT_TOKEN"]
+next = """
+In the Discord Developer Portal, copy the app's Public Key (General Information) and Bot token (Bot).
+Register the /ask command once:
+  curl -X POST https://discord.com/api/v10/applications/<application id>/commands -H "Authorization: Bot $DISCORD_BOT_TOKEN" -H "Content-Type: application/json" -d '{"name":"ask","description":"Ask the agent","options":[{"type":3,"name":"prompt","description":"Your question","required":true}]}'
+Run `egin serve` on a public HTTPS URL and set Interactions Endpoint URL to https://<your server>/channels/discord."""
+docs = "https://egin.dev/docs/channels#discord"

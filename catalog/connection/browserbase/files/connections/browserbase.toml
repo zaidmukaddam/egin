@@ -1,0 +1,3 @@
+# Browserbase's MCP server. Its tools reach the model as browserbase__<tool>.
+# Browserbase documents no header for the key, only this URL parameter.
+url = "https://mcp.browserbase.com/mcp?browserbaseApiKey=${BROWSERBASE_API_KEY}"

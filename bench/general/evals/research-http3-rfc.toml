@@ -1,0 +1,3 @@
+category = "research"
+prompt = "Using web search, find the number of the IETF RFC that defines HTTP/3. Reply with just the RFC number."
+expect = "9114"

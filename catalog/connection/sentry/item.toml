@@ -1,0 +1,4 @@
+description = "Sentry's MCP server: issues, traces and Seer analysis"
+env = ["SENTRY_ACCESS_TOKEN"]
+next = "Create a user auth token in Sentry: User settings → Auth Tokens. Sentry takes it as `Sentry-Bearer`, not `Bearer`."
+docs = "https://github.com/getsentry/sentry-mcp"

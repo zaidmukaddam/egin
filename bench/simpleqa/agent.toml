@@ -1,0 +1,12 @@
+# SimpleQA Verified: short factual questions answered with web research.
+# Build with bench/simpleqa/prepare.py, then: egin eval <out> --model <id>
+model = "deepseek-v4.1-flash"
+web = "client"
+approval = "never"
+max_turns = 20
+max_cost = 0.25
+# SimpleQA (Verified) is republished with its answers on Hugging Face, Kaggle and OpenAI's blob store, and
+# web search finds them: the first run hit answer datasets in 33 of 600 web sessions. Block them for search
+# and fetch, and give bash no network (the web tools run on the host), so a script cannot fetch them either.
+exclude_domains = ["huggingface.co", "hf.co", "hf-mirror.com", "modelscope.cn", "kaggle.com", "openaipublic.blob.core.windows.net"]
+network = []

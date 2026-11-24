@@ -1,0 +1,352 @@
+---
+import Page from "../layouts/Page.astro";
+import Logo from "../components/Logo.astro";
+import CodeCard from "../components/CodeCard.astro";
+import BenchCard from "../components/BenchCard.astro";
+
+const templates = [
+  { id: "npm", cmd: "npx egin-ts@latest init my-agent" },
+  { id: "pnpm", cmd: "pnpm dlx egin-ts@latest init my-agent" },
+  { id: "bun", cmd: "bunx egin-ts@latest init my-agent" },
+  { id: "cargo", cmd: "cargo install --git https://github.com/zaidmukaddam/egin && egin init my-agent" },
+];
+
+const tree = `my-agent/
+  agent.toml          model and settings
+  instructions.md     system prompt
+  tools/              scripts the agent can call
+  skills/             instructions loaded when needed
+  evals/              prompts and checks
+  workspace/          files the agent works on`;
+
+const tool = `#!/usr/bin/env python3
+# description: GET a URL and report the status code and latency.
+# safe: true
+# param url (string, required): The URL to check
+import json, sys, time, urllib.request
+
+url = json.load(sys.stdin)["url"]
+start = time.time()
+status = urllib.request.urlopen(url, timeout=3).status
+ms = int((time.time() - start) * 1000)
+print(json.dumps({"status": status, "ms": ms}))`;
+
+const sandbox = `network = ["example.com"]
+secrets = [{ name = "GITHUB_TOKEN", host = "api.github.com" }]`;
+
+// One run of the ops template, interrupted between two tool calls.
+const trace = [
+  { kind: "tool", name: "read_file", arg: "runbooks/http-health.md", t: "3 ms" },
+  { kind: "tool", name: "http_check", arg: "https://example.com", t: "182 ms" },
+  { kind: "note", text: "Process killed" },
+  { kind: "note", text: "egin run my-agent --session 01JD7…" },
+  { kind: "tool", name: "http_check", arg: "https://example.com/api", t: "3.0s" },
+  { kind: "tool", name: "write_file", arg: "incidents/2026-11-16.md", t: "5 ms" },
+  { kind: "done", text: "DEGRADED: /api timed out twice. Incident note written." },
+];
+
+const evalToml = `prompt = "Run the health check runbook. Reply with the status."
+expect = "OK"`;
+
+const variants = `[default]
+
+[bash-only]
+tool_style = "bash"`;
+
+const serve = `curl localhost:8787/sessions -d '{"message": "Check the targets"}'
+curl -N localhost:8787/sessions/{id}/events`;
+
+const webhook = `secret = "\${OPS_WEBHOOK_SECRET}"`;
+const slack = `app_token = "\${SLACK_APP_TOKEN}"
+bot_token = "\${SLACK_BOT_TOKEN}"`;
+const schedule = `cron = "*/15 * * * *"
+prompt = "Run the HTTP health check runbook."`;
+
+const hook = `import { useAgent } from "egin-ts/react";
+
+const agent = useAgent({ baseUrl: "/egin" });
+agent.send("Summarise this", files);
+agent.approve(callId, true);`;
+
+const commands = [
+  ["Write a starter agent", "egin init"],
+  ["Run one prompt", "egin run"],
+  ["Talk to it in the terminal", "egin chat"],
+  ["Serve it over HTTP", "egin serve"],
+  ["Run its evals", "egin eval"],
+  ["Tune a model's profile from evals", "egin evolve"],
+  ["Run Terminal-Bench or SWE-bench tasks", "egin bench"],
+  ["Turn results into one HTML page", "egin report"],
+];
+
+// GAIA validation, 165 tasks, leak-audited; cost in dollars for the whole run. From docs/results.
+const gaia = [
+  { model: "Claude Sonnet 5.5", egin: 136, eve: 130, eginCost: 16.46, eveCost: 23.76 },
+  { model: "Qwen4 Max", egin: 136, eve: 119, eginCost: 19.1, eveCost: 27.77 },
+  { model: "GPT-6.1 Sol", egin: 129, eve: 124, eginCost: 12.58, eveCost: 22.35 },
+  { model: "Claude Haiku 5.5", egin: 114, eve: 108, eginCost: 1.19, eveCost: 1.74 },
+  { model: "GPT-6 Luna", egin: 103, eve: 98, eginCost: 0.8, eveCost: 1.89 },
+];
+---
+<Page title="egin" description="Write an agent as a folder of files and run it with one binary. Tools run in a microVM, and a killed run resumes where it stopped.">
+  <main id="content">
+    <header class="hero">
+      <h1><span class="sr">egin</span><Logo size={5} animate /></h1>
+      <p>Write an agent as a folder of files and run it with one binary.</p>
+    </header>
+
+    <div class="card install">
+      <div class="bar">
+        <div class="seg" role="tablist" aria-label="Package manager">
+          <span class="thumb" aria-hidden="true"></span>
+          {templates.map((t, i) => (
+            <button role="tab" class="tab" id={`tab-${t.id}`} aria-controls="cmd-panel" aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} data-cmd={t.cmd}>{t.id}</button>
+          ))}
+        </div>
+        <span class="pills"><button class="pill" type="button" data-ask-open>Ask AI</button><a class="pill" href="/docs">Docs</a><a class="pill" href="https://github.com/zaidmukaddam/egin">GitHub</a></span>
+      </div>
+      <div class="panel cmd" role="tabpanel" id="cmd-panel" aria-labelledby={`tab-${templates[0].id}`}>
+        <code><span class="prompt">$</span> <span id="cmd">{templates[0].cmd}</span></code>
+        <button class="copy" data-copy-from="cmd" aria-label="Copy command">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hint">Start from a template with <code>--template research</code>, <code>ops</code> or <code>support</code>.</p>
+
+    <section>
+      <h2>How it works</h2>
+      <p>An agent is a folder. Commit it, and review a change to its instructions like any other diff.</p>
+      <div class="card">
+        <div class="panel tree"><pre>{tree.split("\n").map((l) => {
+          const m = l.match(/^(\s*\S+)(\s+)(.*)$/);
+          return m ? <span><span>{m[1]}</span>{m[2]}<span class="dim">{m[3]}</span>{"\n"}</span> : <span>{l + "\n"}</span>;
+        })}</pre></div>
+      </div>
+
+      <p>A tool is one script. Its opening comments say what it does and what it takes, the arguments arrive on stdin, and whatever it prints is the result. Any language works.</p>
+      <CodeCard file="tools/http_check.py" lang="python" code={tool} />
+
+      <p>Tools run in a microVM made for each session. It reaches only the hosts you list, and it never sees your secrets: the real token is swapped in on requests to its host.</p>
+      <CodeCard file="agent.toml" lang="toml" code={sandbox} />
+
+      <p>Each step is saved before the next one starts. Kill the process and run the session again: it resumes from the last saved step, without repeating a model call.</p>
+      <div class="card">
+        <ol class="panel trace" aria-label="A session killed between two tool calls and resumed">
+          {trace.map((e, i) => (
+            <li class={e.kind} style={`--i:${i}`}>
+              {e.kind === "tool"
+                ? <><span class="tname">{e.name}</span><span class="targ">{e.arg}</span><span class="t">{e.t}</span></>
+                : <span>{e.text}</span>}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <p>An eval is a prompt and a check. <code>egin eval</code> runs each one under every variant of your settings, so you know what a change is worth before you keep it.</p>
+      <CodeCard file="evals/health-check.toml" lang="toml" code={evalToml} />
+      <CodeCard file="evals/variants.toml" lang="toml" code={variants} />
+    </section>
+
+    <section>
+      <h2>Commands</h2>
+      <ul class="keys">
+        {commands.map(([label, cmd]) => (
+          <li><span>{label}</span><kbd>{cmd}</kbd></li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h2>Serving</h2>
+      <p><code>egin serve my-agent</code> starts an HTTP API on port 8787. Start a session with a POST, then follow its events as they stream.</p>
+      <CodeCard file="terminal" lang="sh" code={serve} />
+      <p>To reach the agent from other services, add a channel. A webhook takes HMAC-signed POSTs, one session per thread.</p>
+      <CodeCard file="channels/webhook.toml" lang="toml" code={webhook} />
+      <p>Slack works over Socket Mode, so the server needs no public URL.</p>
+      <CodeCard file="channels/slack.toml" lang="toml" code={slack} />
+      <p>To run a prompt on a timer, add a schedule.</p>
+      <CodeCard file="schedules/health.toml" lang="toml" code={schedule} />
+      <p>To put the agent in a web app, use the React hook. Start from <code>--template web</code> for a full chat with attachments and approvals.</p>
+      <CodeCard file="Chat.tsx" lang="tsx" code={hook} />
+    </section>
+
+    <section>
+      <h2>Benchmarks</h2>
+      <p>egin against eve on the same model in the same sandboxes, summed over every model each suite ran on. egin passes more on every agent suite; on SimpleQA the two tie.</p>
+      <BenchCard
+        title="egin vs eve"
+        sub="pass rate, all models"
+        note="GAIA: 5 models, $1 per task. Terminal-Bench 2: 3 models. FrontierHarness v1.1: 5 models, 60 tasks, four attempts each. FrontierHarness v1.0: 11 models. DeepSWE: 11, one run per task. SimpleQA Verified: 5."
+        spec={{
+          series: ["egin", "eve"],
+          of: [825, 261, 1200, 231, 99, 5000],
+          rows: [["GAIA", 618, 579], ["Terminal-Bench 2", 206, 188], ["FrontierHarness v1.1", 802, 718], ["FrontierHarness v1.0", 207, 191], ["DeepSWE", 60, 54], ["SimpleQA Verified", 4787, 4779]],
+        }}
+      />
+      <p>On FrontierHarness v1.1, which we ran for four harnesses on the same sandboxes and models, egin passes the most.</p>
+      <BenchCard
+        title="FrontierHarness v1.1"
+        sub="5 models · 60 tasks · 4 attempts"
+        note="Our own runs, not the published leaderboard. How they are counted is in Results."
+        spec={{
+          series: ["passes"],
+          highlight: "egin",
+          of: [1200, 1200, 1200, 1194],
+          rows: [["egin", 802], ["pi 0.83.0", 728], ["eve 1.0.2", 718], ["Codex CLI", 565]],
+        }}
+      />
+      <p>On FrontierHarness v1.0's 21 Terminal-Bench tasks with kimi-k3, the model its leaderboard used, egin passes more tasks than any other harness on that leaderboard.</p>
+      <BenchCard
+        title="FrontierHarness v1.0 leaderboard"
+        sub="kimi-k3 · 21 tasks"
+        note="Leaderboard rows from its published v1.0 data. The full list is in Results."
+        spec={{
+          series: ["passes"],
+          highlight: "egin",
+          tasks: 21,
+          rows: [["egin", 20], ["eve 1.0.2", 18], ["claude-code", 16], ["codex", 15], ["opencode", 15], ["kimi-code", 14], ["hermes", 13]],
+        }}
+      />
+      <p>egin also costs less: on GAIA, 31 to 58% less per model.</p>
+      <BenchCard
+        title="GAIA cost"
+        sub="all 165 tasks, per model"
+        spec={{ series: ["egin", "eve"], money: true, rows: gaia.map((g) => [g.model, g.eginCost, g.eveCost]) }}
+      />
+      <p class="small">November 2026, eve 1.0.2, one run per task unless noted. GAIA drops any pass whose search results quoted the question and its answer in agent or benchmark write-ups. Every run is in <a href="/docs/results">Results</a>.</p>
+    </section>
+  </main>
+
+  <script>
+    import { wireChartTips } from "../lib/chart-tip";
+    wireChartTips();
+
+    const cmd = document.getElementById("cmd")!;
+    const panel = document.getElementById("cmd-panel")!;
+    const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tab")];
+    const seg = document.querySelector<HTMLElement>(".seg")!;
+    // The highlight is one layer clipped to the selected tab, so it slides between tabs of any width.
+    const place = () => {
+      const tab = tabs.find((t) => t.getAttribute("aria-selected") === "true")!;
+      seg.style.setProperty("--l", `${tab.offsetLeft}px`);
+      seg.style.setProperty("--r", `${seg.clientWidth - tab.offsetLeft - tab.offsetWidth}px`);
+    };
+    const select = (tab: HTMLButtonElement) => {
+      for (const t of tabs) {
+        t.setAttribute("aria-selected", String(t === tab));
+        t.tabIndex = t === tab ? 0 : -1;
+      }
+      panel.setAttribute("aria-labelledby", tab.id);
+      cmd.textContent = tab.dataset.cmd!;
+      place();
+    };
+    // Placed once without motion (and again if the font changes the widths), then it may animate.
+    place();
+    new ResizeObserver(place).observe(seg);
+    requestAnimationFrame(() => seg.classList.add("ready"));
+    for (const tab of tabs) {
+      tab.addEventListener("click", () => select(tab));
+      // The tab pattern: arrows, Home and End move between tabs, and selection follows focus.
+      tab.addEventListener("keydown", (e) => {
+        const i = tabs.indexOf(tab);
+        const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (to === undefined) return;
+        e.preventDefault();
+        const next = tabs[(to + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+      });
+    }
+  </script>
+
+  <style>
+    main { max-width: 640px; margin: 0 auto; padding: 96px 24px 0; }
+    h1 { margin: 0 0 12px; }
+    /* One rhythm: 24px between blocks, 16px under a line of text, 96px between sections. */
+    section { margin-top: 96px; }
+    main :global(.card) { margin-bottom: 24px; }
+    .small { font-size: 0.875rem; line-height: 1.5; color: var(--muted); }
+
+    .hero p { margin-bottom: 24px; color: var(--muted); }
+
+    /* Tabs sit 4px inside the card, so their 10px corners are concentric with its 14px ones. */
+    /* Two segments 4px inside the card: the package tabs in an inset track, and Docs on its own. Both have
+       10px corners, concentric with the card's 14px; the tabs sit 3px inside the track with 7px corners. */
+    .bar { display: flex; gap: 4px; padding: 0 0 4px; }
+    .seg { height: 40px; border-radius: 10px; background: var(--track); box-shadow: inset 0 0 0 1px rgb(var(--tint) / 0.04); }
+    .seg { position: relative; display: flex; padding: 3px; min-width: 0; }
+    .thumb {
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      background: var(--button);
+      box-shadow: inset 0 0 0 1px var(--ring), var(--button-shadow);
+      clip-path: inset(3px var(--r, 100%) 3px var(--l, 0) round 7px);
+    }
+    .seg.ready .thumb { transition: clip-path 220ms var(--ease-out); }
+    .tab, .pill {
+      position: relative;
+      flex: none;
+      font: 500 14px/34px "Inter Variable", sans-serif;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      border-radius: 7px;
+      padding: 0 12px;
+      cursor: pointer;
+      transition: color 150ms, transform 100ms var(--ease-out);
+    }
+    .tab[aria-selected="true"] { color: var(--fg); }
+    @media (hover: hover) { .tab:hover, .pill:hover { color: var(--fg); } }
+    .tab:active, .pill:active { transform: scale(0.96); }
+    /* Docs is a link out, so it reads as a raised button at full contrast, apart from the tabs. */
+    .pills { margin-left: auto; display: flex; gap: 6px; }
+    .pill { display: grid; place-items: center; height: 40px; border-radius: 10px; line-height: 40px; padding: 0 16px; color: var(--fg); background: var(--button); box-shadow: inset 0 0 0 1px var(--ring), var(--button-shadow); transition: background-color 150ms, transform 100ms var(--ease-out); }
+    @media (hover: hover) { .pill:hover { background: var(--button-hover); } }
+    @media (prefers-reduced-motion: reduce) { .seg.ready .thumb { transition: none; } }
+    .cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 8px 12px 16px; }
+    .cmd code { background: none; border: 0; padding: 0; font-size: 13px; line-height: 20px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .prompt { color: var(--dim); }
+    .hint { margin: 0; }
+
+    .tree pre { margin: 0; padding: 16px; font: 0.8125rem/1.6 var(--mono); overflow-x: auto; color: var(--fg); }
+
+    .trace { list-style: none; margin: 0; padding: 10px 0; font: 0.8125rem/1.54 var(--mono); }
+    .trace li { display: flex; gap: 12px; padding: 5px 16px; min-width: 0; animation: in 400ms cubic-bezier(0.23, 1, 0.32, 1) both; animation-delay: calc(var(--i) * 120ms); }
+    .tname { flex: none; width: 88px; color: var(--fg); }
+    .targ { flex: 1; min-width: 0; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .t { flex: none; color: var(--dim); font-variant-numeric: tabular-nums; }
+    .trace .note { margin: 2px 10px; padding: 5px 6px; border-radius: 6px; color: var(--muted); background: rgb(var(--tint) / 0.04); }
+    .trace .done { margin-top: 10px; color: var(--fg); font-family: "Inter Variable", sans-serif; font-size: 14px; }
+    @keyframes in { from { opacity: 0; transform: translateY(3px); } }
+
+    .keys { list-style: none; padding: 0; margin: 0; }
+    .keys li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; color: var(--muted); }
+
+    .scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; line-height: 1.43; }
+    th, td { white-space: nowrap; }
+    th { text-align: left; font-weight: 500; color: var(--dim); padding: 12px 16px 4px; }
+    td { padding: 8px 16px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    tbody tr:last-child td { padding-bottom: 12px; }
+    th:not(:first-child), td:not(:first-child) { text-align: right; }
+    td:not(:first-child) { font-family: var(--mono); font-size: 13px; }
+    td:first-child, td.win { color: var(--fg); }
+    .small a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--dim); text-underline-offset: 3px; }
+
+    @media (max-width: 640px) {
+      main { padding-top: 64px; }
+      .bar { flex-wrap: wrap; row-gap: 6px; }
+      .pills { margin-left: 0; }
+      .tree .dim { display: none; }
+      .tname { width: auto; }
+      th:not(:first-child) { font-size: 12px; }
+      th, td { padding-left: 10px; padding-right: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trace li { animation: none; }
+    }
+  </style>
+</Page>

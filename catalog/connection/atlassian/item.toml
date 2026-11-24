@@ -1,0 +1,8 @@
+description = "Atlassian's Rovo MCP server: Jira and Confluence"
+env = ["ATLASSIAN_BASIC_AUTH"]
+next = """
+An organization admin must first allow API-token authentication for the Rovo MCP server.
+Create an API token at id.atlassian.com → Security → API tokens, then set ATLASSIAN_BASIC_AUTH to base64 of email:token:
+  printf '%s' 'you@example.com:<token>' | base64
+For a service account's API key, use `Authorization = "Bearer ${ATLASSIAN_API_KEY}"` instead."""
+docs = "https://support.atlassian.com/atlassian-rovo-mcp-server/docs/configuring-authentication-via-api-token/"

@@ -1,0 +1,4 @@
+description = "PostHog's MCP server: analytics, insights, flags and dashboards"
+env = ["POSTHOG_PERSONAL_API_KEY"]
+next = "Create a personal API key with the MCP Server preset in PostHog: Settings → Personal API keys."
+docs = "https://posthog.com/docs/model-context-protocol"

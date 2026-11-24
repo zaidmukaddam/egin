@@ -1,0 +1,8 @@
+# Discord channel (Interactions Endpoint URL https://<your server>/channels/discord).
+#   DISCORD_PUBLIC_KEY: Developer Portal → General Information → Public Key; signs every request
+public_key = "${DISCORD_PUBLIC_KEY}"
+
+# Optional. Answers go through the interaction itself; the bot token is only used when a
+# session finishes after a restart, once that interaction has expired.
+#   DISCORD_BOT_TOKEN: Developer Portal → Bot → Token (the bot must be in the server)
+bot_token = "${DISCORD_BOT_TOKEN}"

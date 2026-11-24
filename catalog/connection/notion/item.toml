@@ -1,0 +1,4 @@
+description = "Notion's MCP server: pages, databases and search (Business and Enterprise plans)"
+env = ["NOTION_MCP_TOKEN"]
+next = "A workspace owner creates the token in Notion's Developer portal with New MCP token. Tokens are for Business and Enterprise plans; other plans can only sign in with OAuth, which egin doesn't do yet."
+docs = "https://developers.notion.com/guides/mcp/get-started-with-mcp"

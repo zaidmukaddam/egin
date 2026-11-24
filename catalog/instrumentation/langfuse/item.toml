@@ -1,0 +1,7 @@
+description = "Send traces to Langfuse"
+env = ["LANGFUSE_OTEL_AUTH"]
+next = """
+Langfuse takes Basic auth: set LANGFUSE_OTEL_AUTH to base64 of your public and secret keys:
+  printf '%s' 'pk-lf-…:sk-lf-…' | base64
+For Langfuse's US region or a self-hosted instance, change the host."""
+docs = "https://langfuse.com/integrations/native/opentelemetry"

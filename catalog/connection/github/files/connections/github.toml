@@ -1,0 +1,6 @@
+# GitHub's MCP server. Its tools reach the model as github__<tool>.
+url = "https://api.githubcopilot.com/mcp/"
+headers = { Authorization = "Bearer ${GITHUB_PAT}" }
+
+# Tools named here run without approval; list the read-only ones you trust.
+# safe = ["get_file_contents", "search_repositories"]

@@ -1,0 +1,143 @@
+---
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
+import CommandMenu from "../components/CommandMenu.astro";
+import AskAI from "../components/AskAI.astro";
+import "../styles/site.css";
+
+const { title, description } = Astro.props as { title: string; description: string };
+const url = new URL(Astro.url.pathname, Astro.site);
+const image = new URL("/og.png", Astro.site);
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <script is:inline>
+      // Before first paint, so the page never flashes the other theme: a saved choice wins, else the system's.
+      (() => {
+        const root = document.documentElement;
+        const system = matchMedia("(prefers-color-scheme: light)");
+        let saved = null;
+        try { saved = localStorage.getItem("theme"); } catch {}
+        if (saved === "light" || saved === "dark") root.dataset.theme = saved;
+        const apply = () => root.classList.toggle("light-theme", (root.dataset.theme ?? (system.matches ? "light" : "dark")) === "light");
+        apply();
+        system.addEventListener("change", apply);
+        window.__applyTheme = apply;
+        // An Ask AI panel left open on the page before is open here too (AskAI.astro shows it): the page
+        // makes room for it from the first paint, so nothing shifts when it appears.
+        try {
+          const panel = JSON.parse(sessionStorage.getItem("egin-ask-panel") ?? "null");
+          if (panel) root.classList.add("ask-open");
+          if (panel?.wide) root.classList.add("ask-wide");
+        } catch {}
+      })();
+      // The docs pager is an ordered sequence. A click on Next or Previous leaves a note for the page it
+      // opens, and both pages give their view transition that direction (site.css moves the content with it).
+      (() => {
+        const KEY = "vt-direction";
+        const take = () => { try { const d = sessionStorage.getItem(KEY); sessionStorage.removeItem(KEY); return d; } catch { return null; } };
+        addEventListener("click", (e) => {
+          // A plain click only: one that opens a new tab leaves this page where it is.
+          const link = e.button === 0 && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) && e.target instanceof Element && e.target.closest(".pager a");
+          if (link) try { sessionStorage.setItem(KEY, link.classList.contains("nx") ? "docs-next" : "docs-prev"); } catch {}
+        });
+        addEventListener("pageswap", (e) => {
+          let d = null;
+          try { d = sessionStorage.getItem(KEY); } catch {}
+          if (d && e.viewTransition) e.viewTransition.types.add(d);
+        });
+        addEventListener("pagereveal", (e) => {
+          const d = take();
+          if (d && e.viewTransition) e.viewTransition.types.add(d);
+        });
+      })();
+    </script>
+    <!-- The first paint waits for the Ask AI panel at the end of the page, so a panel that is open across a
+         navigation is in the first frame and the transition between the pages holds it still. -->
+    <link rel="expect" href="#ask" blocking="render" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="egin" />
+    <meta property="og:url" content={url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="egin: write an agent as a folder of files and run it with one binary." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <slot />
+    <span class="sr" role="status" aria-live="polite" id="announce"></span>
+    <footer>
+      <span>egin, a single Rust binary. Open source under MIT.</span>
+      <nav aria-label="Footer">
+        <a href="/">Home</a><a href="/docs">Docs</a><a href="https://github.com/zaidmukaddam/egin">GitHub</a><a href="/llms.txt">llms.txt</a>
+        <button class="theme" type="button" aria-label="Switch to light theme">
+          <svg class="moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-2.93 1.41-1.41m11.32-11.32 1.41-1.41M2 12h2m16 0h2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41"/></svg>
+        </button>
+      </nav>
+    </footer>
+    <script>
+      import { transition } from "../lib/transition";
+
+      // The toggle picks the other theme and remembers it. Its label names what a click will do.
+      const toggle = document.querySelector<HTMLButtonElement>(".theme")!;
+      const root = document.documentElement;
+      const label = () => toggle.setAttribute("aria-label", `Switch to ${root.classList.contains("light-theme") ? "dark" : "light"} theme`);
+      label();
+      toggle.addEventListener("click", () => {
+        const next = root.classList.contains("light-theme") ? "dark" : "light";
+        try { localStorage.setItem("theme", next); } catch {}
+        transition("theme", () => {
+          root.dataset.theme = next;
+          (window as unknown as { __applyTheme: () => void }).__applyTheme();
+          label();
+        });
+      });
+
+      document.addEventListener("click", async (e) => {
+        const b = (e.target as Element).closest<HTMLButtonElement>(".copy");
+        if (!b) return;
+        const text = b.dataset.copy ?? document.getElementById(b.dataset.copyFrom!)?.textContent ?? "";
+        await navigator.clipboard.writeText(text);
+        b.classList.add("done");
+        document.getElementById("announce")!.textContent = "Copied";
+        // A second click restarts the check rather than letting the first timer cut it short.
+        clearTimeout(Number(b.dataset.timer));
+        b.dataset.timer = String(
+          setTimeout(() => {
+            b.classList.remove("done");
+            document.getElementById("announce")!.textContent = "";
+          }, 1200),
+        );
+      });
+    </script>
+    <style>
+      footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; max-width: 640px; margin: 0 auto; padding: 48px 24px 64px; font-size: 14px; color: var(--dim); }
+      nav { display: flex; align-items: center; gap: 20px; }
+      nav .theme { margin-left: -6px; }
+      footer a { color: var(--dim); transition: color 150ms; }
+      footer a:hover { color: var(--fg); }
+    </style>
+    <CommandMenu />
+    <AskAI />
+    <Analytics />
+    <SpeedInsights />
+  </body>
+</html>

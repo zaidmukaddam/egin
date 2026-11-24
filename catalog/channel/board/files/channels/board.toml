@@ -1,0 +1,11 @@
+# Vercel Board: `egin serve` follows this channel with `vercel board tail` and answers each new message in its
+# thread, one session per thread. Needs the Vercel CLI, signed in with `vercel login` or given BOARD_TOKEN.
+# BOARD_NAME or BOARD_URL in the environment picks another board than the team's General one.
+
+channel = "dev"        # a channel, or a subtree such as "dev/"
+profile = "egin"       # the agent writes as this profile; its own messages are never answered
+
+# More `vercel board tail` filters, to answer only some messages:
+# args = ["--mentions", "@your-handle/egin"]     # only messages that mention the agent
+# args = ["--label", "kind=bug"]                 # only threads with this label
+# cli = "vercel"                                  # the command that runs `board`

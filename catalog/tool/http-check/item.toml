@@ -1,0 +1,2 @@
+description = "A tool that GETs a URL and reports its status code and latency (Python)"
+docs = "https://egin.dev/docs/tools#your-own-tools"

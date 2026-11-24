@@ -1,0 +1,89 @@
+{
+  "name": "egin-ts",
+  "version": "0.1.0",
+  "description": "Durable backend agents as folders. The egin CLI, a client for egin serve, Next.js integration, a proxy for your app's server, and React, Vue and Svelte bindings.",
+  "license": "MIT",
+  "homepage": "https://egin.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaidmukaddam/egin.git",
+    "directory": "npm/egin"
+  },
+  "type": "module",
+  "bin": {
+    "egin": "bin/egin.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./proxy": {
+      "types": "./dist/proxy.d.ts",
+      "default": "./dist/proxy.js"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "default": "./dist/next.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "default": "./dist/vue.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte.d.ts",
+      "default": "./dist/svelte.js"
+    },
+    "./workflow": {
+      "types": "./dist/workflow/index.d.ts",
+      "default": "./dist/workflow/index.js"
+    },
+    "./workflow/session": {
+      "types": "./dist/workflow/session.d.ts",
+      "default": "./dist/workflow/session.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "tsc -p . && node --test test/*.test.js"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "vue": ">=3.3",
+    "workflow": ">=5.7"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    },
+    "workflow": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^7.0.2",
+    "vue": "^3.5.45",
+    "workflow": "^5.7.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

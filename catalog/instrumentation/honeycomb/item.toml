@@ -1,0 +1,4 @@
+description = "Send traces to Honeycomb"
+env = ["HONEYCOMB_API_KEY"]
+next = "Create an ingest API key in Honeycomb: Environment settings → API keys. For Honeycomb's EU region, change the host to api.eu1.honeycomb.io."
+docs = "https://docs.honeycomb.io/send-data/opentelemetry/"

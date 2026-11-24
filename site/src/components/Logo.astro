@@ -1,0 +1,43 @@
+---
+// The egin wordmark: flat bars of one weight, a half-spine G, and the N's diagonal in lime.
+// `size` keeps the old dot-matrix scale: the mark is 9 × size pixels tall.
+const { size = 10, animate = false } = Astro.props as { size?: number; animate?: boolean };
+const height = size * 9;
+const width = Math.round((height * 370) / 120);
+---
+<svg
+  class:list={["logo", { animate }]}
+  viewBox="0 0 370 120"
+  width={width}
+  height={height}
+  role="img"
+  aria-label="egin"
+>
+  <path class="bar" style="--i:0" d="M0 0H90L76.2 20H0Z M0 50H76L62.2 70H0Z M0 100H76.2L90 120H0Z" />
+  <path class="bar" style="--i:1" d="M110 0H210L196.2 20H110Z M110 50H130V100H190V80H160V60H210V120H110Z" />
+  <path class="bar" style="--i:2" d="M230 0H250V120H230Z" />
+  <path class="bar" style="--i:3" d="M270 0H290V120H270Z M350 0H370V120H350Z" />
+  <path class="slash" d="M270 0H292L370 120H348Z" />
+</svg>
+
+<style>
+  .logo { display: block; max-width: 100%; height: auto; view-transition-name: egin-logo; }
+  .bar { fill: var(--fg); }
+  .slash { fill: #c6f432; }
+  .animate .bar {
+    animation: bar-in 500ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation-delay: calc(var(--i) * 60ms);
+  }
+  /* The slash cuts in last, top to bottom, once the letters are standing. */
+  .animate .slash { animation: slash-in 420ms cubic-bezier(0.23, 1, 0.32, 1) 300ms both; }
+  @keyframes bar-in {
+    from { opacity: 0; transform: translateX(-12px); }
+  }
+  @keyframes slash-in {
+    from { clip-path: inset(0 0 100% 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate .bar, .animate .slash { animation: none; }
+  }
+</style>

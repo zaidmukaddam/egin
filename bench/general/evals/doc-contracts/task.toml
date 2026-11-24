@@ -1,0 +1,16 @@
+category = "documents"
+prompt = "The contracts/ folder holds three supplier contracts. Extract each into contracts.json: a JSON array of objects {\"supplier\": string, \"start\": \"YYYY-MM-DD\", \"annual_value_usd\": number}, sorted by supplier name."
+check = """python3 - <<'EOF'
+import json
+d = json.load(open("contracts.json"))
+want = [
+  {"supplier": "Brightline Logistics", "start": "2026-03-01", "annual_value_usd": 120000},
+  {"supplier": "Northwind Paper", "start": "2025-11-15", "annual_value_usd": 48500},
+  {"supplier": "Quanta Cloud", "start": "2026-01-01", "annual_value_usd": 312000},
+]
+assert len(d) == 3, d
+for got, w in zip(d, want):
+    # The legal name ("Quanta Cloud, Inc.") is as good as the short one.
+    assert got["supplier"].startswith(w["supplier"]), (got, w)
+    assert got["start"] == w["start"] and float(got["annual_value_usd"]) == w["annual_value_usd"], (got, w)
+EOF"""

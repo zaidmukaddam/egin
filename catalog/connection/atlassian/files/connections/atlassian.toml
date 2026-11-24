@@ -1,0 +1,4 @@
+# Atlassian's Rovo MCP server (Jira, Confluence). Its tools reach the model as atlassian__<tool>.
+url = "https://mcp.atlassian.com/v2/mcp"
+# A personal API token goes as Basic base64(email:token).
+headers = { Authorization = "Basic ${ATLASSIAN_BASIC_AUTH}" }

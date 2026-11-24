@@ -1,0 +1,3 @@
+# Firecrawl's MCP server. Its tools reach the model as firecrawl__<tool>.
+url = "https://mcp.firecrawl.dev/v2/mcp"
+headers = { Authorization = "Bearer ${FIRECRAWL_API_KEY}" }

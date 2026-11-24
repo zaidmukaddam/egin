@@ -1,0 +1,5 @@
+SUPPLY AGREEMENT
+
+This agreement is made between Acme Corp ("Buyer") and Northwind Paper ("Supplier").
+Term. The agreement commences on 15 November 2025 and continues for two (2) years.
+Fees. Buyer shall pay Supplier forty-eight thousand five hundred US dollars ($48,500) per year, invoiced quarterly.

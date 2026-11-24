@@ -1,0 +1,3 @@
+# Spans go to Axiom over OTLP/HTTP. ${VAR} reads the host's environment when a span is sent.
+endpoint = "https://${AXIOM_DOMAIN}/v1/traces"
+headers = { Authorization = "Bearer ${AXIOM_TOKEN}", X-Axiom-Dataset = "${AXIOM_DATASET}" }

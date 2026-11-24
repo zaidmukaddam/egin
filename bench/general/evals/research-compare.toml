@@ -1,0 +1,4 @@
+category = "research"
+split = "heldout"
+prompt = "Find the default TCP port of PostgreSQL and of Redis. Write ports.json as {\"postgresql\": <int>, \"redis\": <int>}."
+check = "python3 -c 'import json; d=json.load(open(\"ports.json\")); assert d == {\"postgresql\": 5432, \"redis\": 6379}, d'"

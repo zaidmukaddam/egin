@@ -1,0 +1,5 @@
+# Sentry's MCP server. Its tools reach the model as sentry__<tool>.
+# Append /<org>/<project> to the url to keep the agent to one project.
+url = "https://mcp.sentry.dev/mcp"
+# Sentry reserves plain `Bearer` for OAuth; a user auth token goes as `Sentry-Bearer`.
+headers = { Authorization = "Sentry-Bearer ${SENTRY_ACCESS_TOKEN}" }

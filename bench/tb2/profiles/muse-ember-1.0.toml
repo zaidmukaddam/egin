@@ -1,0 +1,9 @@
+# muse-ember-1.0 (HAR-30). Terminal-Bench 2, 20-task subset, 2026-11-16.
+#
+# Single-switch ablations: baseline, bash-only and no-batching each scored 19/20 against egin's 17/20.
+# Confirmed over two fresh passes of [egin] vs [simple] (these two switches together): 35/40 each,
+# after counting as a fail one [simple] pass that fetched the task's reference solution from GitHub.
+# The score gain did not hold; the cost did, in every comparison: $1.71 vs $2.16 (-21%), ~15% faster.
+# So this is the default for Ember on cost at equal pass rate, not for a higher score.
+tool_style = "bash"
+batching = false
