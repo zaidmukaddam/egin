@@ -101,4 +101,6 @@ cargo install --git https://github.com/zaidmukaddam/egin
 
 To build from source, run `cargo build --release` in the repository. The binary is written to `target/release/egin`.
 
+What changed in each release is in the [changelog](/changelog), the same file as `CHANGELOG.md` in the repository. Release posts are on the [blog](/blog).
+
 *egin* is Basque for "to do, to make".
