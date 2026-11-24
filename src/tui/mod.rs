@@ -283,6 +283,18 @@ pub(crate) fn k(n: u64) -> String {
     }
 }
 
+/// "1 line", "3 lines".
+pub(crate) fn n_lines(n: usize) -> String {
+    format!("{n} line{}", if n == 1 { "" } else { "s" })
+}
+
+#[test]
+fn n_lines_singular() {
+    assert_eq!(n_lines(1), "1 line");
+    assert_eq!(n_lines(0), "0 lines");
+    assert_eq!(n_lines(12), "12 lines");
+}
+
 /// Copy to the clipboard: pbcopy on a local Mac, else OSC 52 through the terminal.
 pub(crate) fn copy(text: &str) -> bool {
     use std::process::{Command, Stdio};
@@ -735,12 +747,13 @@ impl Ui {
         self.sid = sid.to_string();
         self.items = vec![];
         self.reset_view();
-        self.cost = self.app.store.stats(sid).map(|s| s.cost).unwrap_or(0.0);
         self.replaying = true;
         for (id, body) in events {
             self.on_event(Event { session: sid.to_string(), id: Some(id), body });
         }
         self.replaying = false;
+        // After the replay, which adds each model call's cost again; the store's total is the true one.
+        self.cost = self.app.store.stats(sid).map(|s| s.cost).unwrap_or(0.0);
         self.close_thinking();
         if self.items.is_empty() {
             self.items.push(Item::new(Kind::Welcome));

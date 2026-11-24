@@ -297,7 +297,7 @@ impl Ui {
                         }
                     }
                     if all.len() > keep && keep > 0 {
-                        lines.push(Line::from(Span::styled(format!("  │ … +{} lines (enter to view)", all.len() - keep), Style::new().fg(t.faint))));
+                        lines.push(Line::from(Span::styled(format!("  │ … +{} (enter to view)", super::n_lines(all.len() - keep)), Style::new().fg(t.faint))));
                     }
                 }
                 lines
@@ -414,7 +414,7 @@ impl Ui {
         }
         let hidden = n.saturating_sub(head + tail);
         if hidden > 0 {
-            lines.push(Line::from(vec![gutter(), Span::styled(format!("… +{hidden} lines (enter to view)"), Style::new().fg(t.faint))]));
+            lines.push(Line::from(vec![gutter(), Span::styled(format!("… +{} (enter to view)", super::n_lines(hidden)), Style::new().fg(t.faint))]));
         }
         for r in rows.iter().skip(n - tail) {
             push(r, &mut lines);

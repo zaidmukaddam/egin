@@ -408,7 +408,7 @@ impl Ui {
                         let (o, n) = (args["old"].as_str().unwrap_or("").lines().count(), args["new"].as_str().unwrap_or("").lines().count());
                         format!("−{o} +{n} lines")
                     }
-                    "write_file" => format!("{} lines", args["content"].as_str().unwrap_or("").lines().count()),
+                    "write_file" => super::n_lines(args["content"].as_str().unwrap_or("").lines().count()),
                     _ => blocks::detail(tool, args),
                 };
                 let mut body = wrap_chars(&what, w.saturating_sub(2), band.fg(t.text));
@@ -418,7 +418,7 @@ impl Ui {
                     lines.push(pad(Line::from([vec![Span::styled("  ", band)], l.spans].concat()), w, band));
                 }
                 if more > 0 {
-                    lines.push(pad(Line::from(Span::styled(format!("  … +{more} lines"), band.fg(t.dim))), w, band));
+                    lines.push(pad(Line::from(Span::styled(format!("  … +{}", super::n_lines(more)), band.fg(t.dim))), w, band));
                 }
                 lines.push(pad(Line::default(), w, band));
                 lines.push(option(1, *pick == 0, vec![text("Yes, proceed", *pick == 0)]));
@@ -668,7 +668,7 @@ impl Ui {
         f.render_widget(Paragraph::new(Line::from(spans)), area);
         if self.scroll > 0 && self.overlay.is_none() {
             let right = Line::from(vec![
-                Span::styled(format!("↑ {} lines  ", self.scroll), Style::new().fg(t.muted)),
+                Span::styled(format!("↑ {}  ", super::n_lines(self.scroll)), Style::new().fg(t.muted)),
                 Span::styled("end", Style::new().fg(t.text)),
                 Span::styled(" follows ", Style::new().fg(t.dim)),
             ]);

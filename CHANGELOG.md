@@ -2,6 +2,13 @@
 
 Every release of the `egin` binary and the `egin-ts` npm package, newest first.
 
+## 0.1.3
+
+November 25, 2026
+
+- `egin chat` shows the right session cost after Ctrl+R resumes a session. Replaying the transcript added every model call's cost a second time, so a resumed session showed double what it had spent. Nothing was billed twice.
+- `egin chat` says "1 line" instead of "1 lines" on approval cards, collapsed output, pastes and the scroll indicator.
+
 ## 0.1.2
 
 November 24, 2026

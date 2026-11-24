@@ -120,7 +120,7 @@ impl Ui {
                 let lines = s.lines().count();
                 // A long paste shows as a chip and goes out whole on send.
                 if s.len() > 1200 || lines > 15 {
-                    let tag = format!("[Pasted #{}: {lines} lines]", self.pastes.len() + 1);
+                    let tag = format!("[Pasted #{}: {}]", self.pastes.len() + 1, super::n_lines(lines));
                     self.pastes.push((tag.clone(), s.to_string()));
                     self.insert(&tag);
                 } else {
