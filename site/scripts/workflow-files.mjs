@@ -19,6 +19,13 @@ if (!existsSync(fn)) {
   console.error(`${fn} is missing: the Workflow integration only writes it when VERCEL_DEPLOYMENT_ID is set, as \`npm run build\` does.`);
   process.exit(1);
 }
+// The SDK compiles workflow functions only outside node_modules, so `egin` has to be linked from ../npm/egin
+// (npm does that for a file: dependency) rather than copied in (bun does). A copy builds and deploys cleanly,
+// then every Ask AI session fails with "'start' received an invalid workflow function".
+if (!readFileSync("src/pages/.well-known/workflow/v1/_manifest.json", "utf8").includes("npm/egin/dist/workflow/")) {
+  console.error("The egin workflow was not compiled: node_modules/egin must be a symlink to ../npm/egin. Install with `npm install`, not bun.");
+  process.exit(1);
+}
 const config = JSON.parse(readFileSync(`${fn}/.vc-config.json`, "utf8"));
 writeFileSync(`${fn}/.vc-config.json`, JSON.stringify({ ...config, architecture: "x86_64" }, null, 2));
 
