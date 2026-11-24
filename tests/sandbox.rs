@@ -111,6 +111,22 @@ async fn egress_allowlist_and_secrets() {
     sandbox::remove(&app, "microsandbox", &sid).await;
 }
 
+/// HTTPS to an allowed domain, with no secrets: secrets turn TLS interception on by themselves, which hid this case.
+/// microsandbox's strict hostname policy refused every TLS connection to an allowlisted host until egin enabled
+/// interception for domain allowlists.
+#[tokio::test]
+async fn egress_allowlist_https() {
+    if !sandbox::vm_supported() {
+        return;
+    }
+    let (app, agent, sid) = setup("network = [\"example.com\"]\n").await;
+    let o = sh(&app, &agent, &sid, &format!("{FETCH} https://example.com"), 30).await;
+    assert_eq!(o.text.trim(), "200", "HTTPS to an allowed domain: {}", o.text);
+    let o = sh(&app, &agent, &sid, &format!("{FETCH} https://www.wikipedia.org"), 30).await;
+    assert!(!o.ok, "domain off the list must be blocked: {}", o.text);
+    sandbox::remove(&app, "microsandbox", &sid).await;
+}
+
 /// The same checks for each cloud/alternative backend: exec in the working directory with exit
 /// codes, the seeded workspace, stdin (write_file and custom tools), and removal.
 async fn backend_basics(kind: &str) {

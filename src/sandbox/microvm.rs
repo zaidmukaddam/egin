@@ -82,7 +82,19 @@ fn builder(agent: &Agent, sid: &str) -> Result<microsandbox::sandbox::SandboxBui
         b = b.secret_env(&s.name, value, &s.host);
         hosts.push(s.host.clone());
     }
-    Ok(b.network(|n| n.policy(policy(&hosts))))
+    // A domain allowlist needs TLS interception for HTTPS. microsandbox's strict hostname policy (on by default) lets
+    // an allowed name through only when it can read the request's real host, which plain TLS hides, so every HTTPS
+    // call to an allowed domain was refused. Interception keeps that check (it is what stops domain fronting) and
+    // microsandbox points the guest's clients at its CA: SSL_CERT_FILE, REQUESTS_CA_BUNDLE, NODE_EXTRA_CA_CERTS.
+    let domains = !hosts.is_empty() && !hosts.iter().any(|h| h == "*");
+    Ok(b.network(|n| {
+        let n = n.policy(policy(&hosts));
+        if domains {
+            n.tls(|t| t)
+        } else {
+            n
+        }
+    }))
 }
 
 /// `[]` denies all egress, `["*"]` allows it, otherwise only the listed domains (".x.com" matches subdomains).
