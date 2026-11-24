@@ -428,53 +428,6 @@ const copyIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" st
       @media (prefers-reduced-motion: reduce) { .rail .thumb { transition: none; } }
     }
 
-    .prose { color: var(--text); }
-    .prose :global(h2) { margin: 64px 0 16px; scroll-margin-top: 32px; }
-    .prose :global(h3) { font-size: 1.0625rem; line-height: 1.53; font-weight: 550; color: var(--fg); margin: 40px 0 8px; }
-    .prose :global(ul), .prose :global(ol) { font-size: 1.0625rem; line-height: 1.53; margin: 0 0 16px; padding-left: 20px; }
-    .prose :global(li) { margin: 6px 0; }
-    .prose :global(li::marker) { color: var(--dim); }
-    .prose :global(a) { color: var(--fg); text-decoration: underline; text-decoration-color: var(--dim); text-underline-offset: 3px; }
-    .prose :global(a:hover) { text-decoration-color: var(--fg); }
-    .prose :global(strong) { color: var(--fg); font-weight: 550; }
-    .prose :global(blockquote) { margin: 0 0 16px; padding: 12px 16px; border-radius: 10px; background: var(--raise); box-shadow: inset 0 0 0 1px var(--ring); }
-    .prose :global(blockquote p) { margin: 0; font-size: 0.9375rem; line-height: 1.53; }
-
-    /* Code blocks and tables get the card look in CSS alone: a raised 4px frame around a dark panel. */
-    .prose :global(pre), .prose :global(.table) {
-      margin: 4px 4px 20px;
-      border-radius: 10px;
-      background: var(--panel) !important;
-      box-shadow: 0 0 0 1px rgb(var(--tint) / 0.04), 0 0 0 4px var(--raise), 0 0 0 5px var(--ring);
-    }
-    .prose :global(pre) { padding: 16px 48px 16px 16px; font: 0.8125rem/1.5 var(--mono); overflow-x: auto; }
-    .prose :global(.code) { position: relative; }
-    .prose :global(.code .copy) { position: absolute; top: 10px; right: 10px; }
-
-    /* The wrapper scrolls; the table keeps table layout so its rows fill the card. */
-    .prose :global(.table) { overflow-x: auto; }
-    /* Tabular digits so scores and costs line up down a column; words in the same cells are unaffected. */
-    .prose :global(table) { width: 100%; border-collapse: collapse; font-size: 0.875rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
-    .prose :global(th) { text-align: left; vertical-align: bottom; font-weight: 500; color: var(--dim); padding: 12px 16px 6px; }
-    .prose :global(td) { padding: 8px 16px; vertical-align: top; color: var(--muted); }
-    .prose :global(tbody tr:nth-child(odd) td) { background: rgb(var(--tint) / 0.02); }
-    .prose :global(tbody tr:last-child td) { padding-bottom: 12px; }
-    .prose :global(td:first-child) { white-space: nowrap; color: var(--fg); }
-    /* Reference tables (up to 3 columns) end in a description that should not be squeezed to a sliver. */
-    .prose :global(table:not(:has(th:nth-child(4))) td:last-child) { min-width: 240px; }
-    /* Wide score tables (7+ columns) get tighter cells so they fit the column instead of scrolling. */
-    .prose :global(table:has(th:nth-child(7)) :is(th, td):not(:first-child)) { padding-left: 10px; padding-right: 10px; }
-    @media (max-width: 639px) {
-      .prose :global(:is(th, td)) { padding-left: 10px; padding-right: 10px; }
-      .prose :global(:is(th, td):first-child) { padding-left: 14px; }
-      .prose :global(table:not(:has(th:nth-child(4))) td:last-child) { min-width: 160px; }
-    }
-    /* A first cell listing several code items wraps between them; each item stays on one line. */
-    .prose :global(td:first-child:has(code)) { white-space: normal; }
-    .prose :global(td:first-child code) { white-space: nowrap; }
-    .prose :global(td code) { background: none; border: 0; padding: 0; font-size: 0.8125rem; line-height: 1.6; }
-    .prose :global(td:not(:first-child) code) { color: var(--muted); }
-
     .pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 72px; }
     .pager a { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: 12px; background: var(--raise); box-shadow: 0 0 0 1px var(--ring); font-size: 15px; font-weight: 500; min-width: 160px; transition: background-color 150ms; }
     @media (hover: hover) { .pager a:hover { background: rgb(var(--tint) / 0.06); } }

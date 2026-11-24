@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from "astro:content";
+import Article from "../../layouts/Article.astro";
+
+export async function getStaticPaths() {
+  return (await getCollection("blog")).map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const day = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" });
+---
+<Article title={`${post.data.title} · egin`} description={post.data.description}>
+  <time datetime={post.data.date.toISOString().slice(0, 10)}>{day.format(post.data.date)}</time>
+  <h1>{post.data.title}</h1>
+  <div class="prose"><Content /></div>
+  <a class="back" href="/blog">All posts</a>
+  <style>
+    time { display: block; margin-bottom: 12px; font: 0.8125rem/1.5 var(--mono); color: var(--dim); }
+    h1 + .prose { margin-top: 32px; }
+    .back { display: inline-block; margin-top: 48px; font-size: 0.875rem; color: var(--dim); transition: color 150ms; }
+    @media (hover: hover) { .back:hover { color: var(--fg); } }
+  </style>
+</Article>

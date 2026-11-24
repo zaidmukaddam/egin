@@ -12,4 +12,18 @@ const docs = defineCollection({
   }),
 });
 
-export const collections = { docs };
+const blog = defineCollection({
+  loader: glob({ pattern: "*.md", base: "./src/content/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+  }),
+});
+
+// The repository's CHANGELOG.md, so GitHub and /changelog read the same file.
+const changelog = defineCollection({
+  loader: glob({ pattern: "CHANGELOG.md", base: ".." }),
+});
+
+export const collections = { docs, blog, changelog };

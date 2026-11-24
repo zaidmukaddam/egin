@@ -1,0 +1,38 @@
+---
+// The blog and the changelog: the docs' reading column, under a header that links back to the rest of the site.
+import Page from "./Page.astro";
+import Logo from "../components/Logo.astro";
+
+const { title, description } = Astro.props as { title: string; description: string };
+const here = Astro.url.pathname;
+const links = [
+  { href: "/docs", label: "Docs" },
+  { href: "/blog", label: "Blog" },
+  { href: "/changelog", label: "Changelog" },
+  { href: "https://github.com/zaidmukaddam/egin", label: "GitHub" },
+];
+---
+<Page title={title} description={description}>
+  <header class="top">
+    <a class="home" href="/"><span class="sr">egin home</span><Logo size={4} /></a>
+    <nav aria-label="Site">
+      {links.map((l) => <a href={l.href} aria-current={here.startsWith(l.href) ? "page" : undefined}>{l.label}</a>)}
+    </nav>
+  </header>
+  <main id="content" class="article">
+    <slot />
+  </main>
+  <style>
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 640px; margin: 0 auto; padding: 32px 24px 0; }
+    .top nav { display: flex; gap: 20px; font-size: 0.875rem; }
+    .top nav a { color: var(--dim); transition: color 150ms; }
+    .top nav a[aria-current] { color: var(--fg); }
+    @media (hover: hover) { .top nav a:hover { color: var(--fg); } }
+    .article { max-width: 640px; margin: 0 auto; padding: 72px 24px 0; }
+    .article :global(h1) { font-size: 1.875rem; line-height: 1.2; font-weight: 550; letter-spacing: -0.025em; margin: 0 0 8px; }
+    @media (max-width: 480px) {
+      .top { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .article { padding-top: 48px; }
+    }
+  </style>
+</Page>

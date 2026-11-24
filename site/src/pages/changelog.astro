@@ -1,0 +1,16 @@
+---
+import { getEntry, render } from "astro:content";
+import Article from "../layouts/Article.astro";
+
+const entry = await getEntry("changelog", "changelog");
+if (!entry) throw new Error("CHANGELOG.md is missing from the repository root");
+const { Content } = await render(entry);
+---
+<Article title="Changelog · egin" description="Every release of the egin binary and the egin-ts npm package.">
+  <div class="prose changelog"><Content /></div>
+  <style>
+    /* The release date under each version reads as a label, not body text. */
+    .changelog :global(h2 + p) { margin-top: -10px; font: 0.8125rem/1.5 var(--mono); color: var(--dim); }
+    .changelog :global(h2:first-of-type) { margin-top: 48px; }
+  </style>
+</Article>
