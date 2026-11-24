@@ -39,6 +39,8 @@ interface Kind {
   done: string
   /** The argument is code or a path, so it is set in mono. */
   mono?: boolean
+  /** The verb an approval asks with, when it isn't "Run". */
+  ask?: string
 }
 
 const BASH: Kind = { icon: RiTerminalBoxLine, running: "Running", done: "Ran", mono: true }
@@ -48,8 +50,8 @@ const KINDS: Record<string, Kind> = {
   web_fetch: { icon: RiGlobalLine, running: "Reading", done: "Read", mono: true },
   web_extract: { icon: RiGlobalLine, running: "Reading", done: "Read", mono: true },
   read_file: { icon: RiFileTextLine, running: "Reading", done: "Read", mono: true },
-  write_file: { icon: RiFileTextLine, running: "Writing", done: "Wrote", mono: true },
-  edit_file: { icon: RiFileTextLine, running: "Editing", done: "Edited", mono: true },
+  write_file: { icon: RiFileTextLine, running: "Writing", done: "Wrote", mono: true, ask: "Write" },
+  edit_file: { icon: RiFileTextLine, running: "Editing", done: "Edited", mono: true, ask: "Edit" },
   search_files: { icon: RiSearchLine, running: "Searching files for", done: "Searched files for", mono: true },
   ask_user: { icon: RiQuestionLine, running: "Asking", done: "Asked", mono: false },
   task: { icon: RiRobot2Line, running: "Handing off to", done: "Handed off to", mono: false },
@@ -68,7 +70,7 @@ interface ToolStepProps {
 
 /** A call waiting for approval: a question, not activity, so it sits outside the trace (shadcn's Confirmation). */
 export function Confirmation({ part, onAnswer }: ToolStepProps) {
-  const Icon = kind(part.tool).icon
+  const { icon: Icon, ask = "Run" } = kind(part.tool)
   const who = part.agent ? `The ${part.agent} subagent` : "The agent"
   const handoff = part.tool === "task"
   const prompt = handoff && part.args && typeof part.args === "object" ? (part.args as Record<string, unknown>).prompt : undefined
@@ -78,7 +80,7 @@ export function Confirmation({ part, onAnswer }: ToolStepProps) {
         <Icon />
       </ItemMedia>
       <ItemContent className="min-w-0">
-        <ItemTitle className="w-full truncate">{handoff ? `Hand off to ${describe(part)}?` : `Run ${describe(part)}?`}</ItemTitle>
+        <ItemTitle className="w-full truncate">{handoff ? `Hand off to ${describe(part)}?` : `${ask} ${describe(part)}?`}</ItemTitle>
         <ItemDescription className="line-clamp-2">
           {handoff && typeof prompt === "string" ? prompt : `${who} wants to use ${part.tool} in its sandbox.`}
         </ItemDescription>
