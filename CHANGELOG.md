@@ -2,6 +2,14 @@
 
 Every release of the `egin` binary and the `egin-ts` npm package, newest first.
 
+## 0.1.2
+
+November 24, 2026
+
+- HTTPS works to the hosts in a `network = [...]` allowlist on the local microVM. microsandbox's strict hostname check refused every TLS connection to an allowed domain unless it could read the request, so egin now turns on TLS interception for domain allowlists. The check that stops domain fronting stays on, and microsandbox points Python, curl, pip and Node at its certificate. `network = []` and `network = ["*"]` are unchanged.
+- The ops template's health check reports a healthy site as OK. It reported every HTTPS target as DOWN because of the bug above.
+- The web template shows a link to a file the agent wrote, such as `notes.md`, as the file's name instead of "[blocked]".
+
 ## 0.1.1
 
 November 24, 2026
