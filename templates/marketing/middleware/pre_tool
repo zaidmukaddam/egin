@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+# Runs on the host before every tool call, with {"tool", "args"} on stdin and the workspace as its folder.
+# A draft under drafts/ is saved only if it passes the voice rules below and the "Never say" list in brand.md.
+# A non-zero exit blocks the call, and what this prints is shown to the model so it can fix the draft.
+# The specialists in subagents/ run this same script.
+import json, re, sys
+from pathlib import Path
+
+# Phrases that read as machine-written or as hype. Add your own to brand.md's "Never say" list instead.
+TELLS = [
+    "delve", "game-changer", "game changer", "revolutionize", "revolutionary", "seamless", "unlock the power", "unleash",
+    "supercharge", "elevate your", "empower", "leverage", "robust", "cutting-edge", "next-level", "world-class",
+    "best-in-class", "in today's fast-paced", "excited to announce", "thrilled to announce", "we're excited",
+    "let that sink in", "here's the thing", "here's why", "it's not just", "testament to", "tapestry", "effortless",
+]
+# Characters per post. X counts every link as 23.
+LIMITS = {"x": 280, "bluesky": 300, "threads": 500, "linkedin": 3000}
+
+
+def never_say():
+    try:
+        text = Path("brand.md").read_text()
+    except OSError:
+        return []
+    section = re.search(r"^## Never say\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not section:
+        return []
+    return [m.group(1).strip().lower() for m in re.finditer(r"^\s*[-*]\s+(.+)$", section.group(1), re.M)]
+
+
+def x_length(post):
+    return len(re.sub(r"https?://\S+", "x" * 23, post))
+
+
+def problems(text, social):
+    found = []
+    lower = text.lower()
+    if "—" in text:
+        found.append("an em dash (—): use a comma, a colon or a new sentence")
+    for phrase in dict.fromkeys(TELLS + never_say()):
+        if re.search(r"(?<![\w-])" + re.escape(phrase) + r"(?![\w-])", lower):
+            found.append(f'"{phrase}"')
+    if social:
+        if re.search(r"(^|\s)#[A-Za-z]", text):
+            found.append("a hashtag: drop it")
+        for platform, body in re.findall(r"^## (\w+)\s*\n(.*?)(?=^## |\Z)", text, re.M | re.S):
+            limit = LIMITS.get(platform.lower())
+            for i, post in enumerate(p.strip() for p in re.split(r"^---\s*$", body, flags=re.M)):
+                size = x_length(post) if platform.lower() == "x" else len(post)
+                if limit and post and size > limit:
+                    found.append(f"{platform} post {i + 1} is {size} characters; the limit is {limit}")
+    return found
+
+
+def main():
+    call = json.load(sys.stdin)
+    tool, args = call.get("tool"), call.get("args") or {}
+    # A draft written from the shell would skip the check, so writes into drafts/ go through the file tools.
+    cmd = args.get("command", "") if tool == "bash" else ""
+    if re.search(r">>?\s*['\"]?\S*drafts/|\b(tee|cp|mv|sed\s+-i|python3?|perl|node)\b[^;|&]*drafts/", cmd):
+        print("Write drafts with write_file or edit_file, not the shell, so the voice check can read them.")
+        return 1
+    if tool not in ("write_file", "edit_file"):
+        return 0
+    path = args.get("path", "")
+    if "drafts/" not in path:
+        return 0
+    # The model may name the file from inside the sandbox; the part from drafts/ on is the same here.
+    rel = Path(path[path.index("drafts/"):])
+    if tool == "write_file":
+        text = args.get("content", "")
+    else:
+        try:
+            text = rel.read_text().replace(args.get("old", ""), args.get("new", ""), 1)
+        except OSError:
+            return 0
+    found = problems(text, rel.parts[1:2] == ("social",))
+    if not found:
+        return 0
+    print(f"{rel} was not saved. It has:")
+    for p in found:
+        print(f"- {p}")
+    print("Rewrite those parts in plain words and save it again.")
+    return 1
+
+
+sys.exit(main())

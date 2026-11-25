@@ -49,6 +49,20 @@ What makes it work:
 - A Slack channel, so the agent answers in threads. See [Channels and schedules](/docs/channels#slack).
 - Evals that check it escalates when it should and doesn't when it shouldn't. See [Evals](/docs/evals).
 
+## Marketing team
+
+A lead agent and three specialists: `positioning` keeps `brand.md`, the shared picture of the product; `writer` drafts launch posts, blog posts and landing pages; `social` drafts posts for X, LinkedIn and Bluesky. You bring the work to the lead, it briefs the right specialist, and the drafts land as files in `workspace/drafts/`. Nothing is published.
+
+```bash
+egin init my-team --template marketing
+```
+
+What makes it work:
+
+- Subagents, each a folder with its own instructions and skills, sharing one workspace. See [Subagents](/docs/subagents).
+- Middleware that refuses to save a draft with an em dash, a hashtag, a phrase that reads as machine-written, a word from the brand's "Never say" list, or an X post over 280 characters. The model gets the list and fixes it. See [Middleware and hooks](/docs/middleware-and-hooks).
+- Evals that run a launch end to end and check the drafts the team left. See [Evals](/docs/evals).
+
 ## Web chat
 
 A Next.js chat app built on shadcn/ui, with the agent in `agent/`. It streams answers, asks before running shell commands, and lets people attach files and pick a model. `npm run dev` starts the app and the agent together.

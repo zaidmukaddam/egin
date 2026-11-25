@@ -1,0 +1,3 @@
+prompt = "egin 0.2 ships Thursday with a marketing template: a lead agent and three specialists in one folder. Draft the launch posts for X and LinkedIn."
+# One file with both platforms, and the voice check held: no em dash anywhere.
+check = "f=$(ls drafts/social/*.md | head -1) && grep -qi '^## x' \"$f\" && grep -qi '^## linkedin' \"$f\" && ! grep -q '—' \"$f\""

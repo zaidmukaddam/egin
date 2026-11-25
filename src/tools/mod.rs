@@ -610,7 +610,8 @@ async fn subagent(app: &Arc<App>, parent: &Agent, sid: &str, name: &str, prompt:
     if !parent.subagents.iter().any(|s| s == name) {
         anyhow::bail!("no subagent named {name}");
     }
-    let mut sub = Agent::load(&parent.dir.join("subagents").join(name), &toml::Table::new())?;
+    let dir = parent.dir.join("subagents").join(name);
+    let mut sub = Agent::load(&dir, &parent.inherited(&dir))?;
     sub.workspace = parent.workspace.clone();
     let sub_sid = run::new_session(app, &sub)?;
     // The subagent's session belongs to whoever owns the parent, so that user can follow it and

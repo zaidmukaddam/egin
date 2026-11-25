@@ -1,0 +1,3 @@
+# Writes long-form drafts into workspace/drafts/. The voice check in middleware/pre_tool runs on every save.
+approval = "never"
+max_turns = 40

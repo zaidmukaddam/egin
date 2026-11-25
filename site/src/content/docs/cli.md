@@ -12,7 +12,7 @@ Most commands take the agent folder as their first argument. `models`, `report`,
 Write a starter agent folder.
 
 ```bash
-egin init <dir> [--template basic|research|ops|support|web]
+egin init <dir> [--template basic|research|ops|support|marketing|web]
 ```
 
 ## egin add

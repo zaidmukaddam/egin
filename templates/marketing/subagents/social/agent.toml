@@ -1,0 +1,4 @@
+# Writes short posts into workspace/drafts/social/. The voice check in middleware/pre_tool runs on every save,
+# including the length of each post.
+approval = "never"
+max_turns = 40

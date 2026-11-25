@@ -1,0 +1,4 @@
+# Owns workspace/brand.md. Asks the person what only they know and researches the rest on the web.
+ask = true
+approval = "never"
+max_turns = 40

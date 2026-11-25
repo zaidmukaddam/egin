@@ -27,7 +27,7 @@ enum Cmd {
     /// Create a starter agent folder
     Init {
         dir: PathBuf,
-        /// basic, research, ops, support, web, or a path to a folder to copy
+        /// basic, research, ops, support, marketing, web, or a path to a folder to copy
         #[arg(long, default_value = "basic")]
         template: String,
     },

@@ -13,7 +13,7 @@ Docs: [egin.dev/docs](https://egin.dev/docs). Benchmark results: [egin.dev/docs/
 ```bash
 export YDC_API_KEY=...            # or put it in .env.local
 cargo build --release
-./target/release/egin init my-agent --template research   # basic, research, ops, support or web
+./target/release/egin init my-agent --template research   # basic, research, ops, support, marketing or web
 ./target/release/egin run my-agent "Who maintains SQLite, and under what license?"
 ```
 

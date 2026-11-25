@@ -1,0 +1,9 @@
+# The lead of a small marketing team. It routes work to the specialists in subagents/ and never writes
+# the deliverable itself. Drafts land as files in workspace/drafts/; nothing is published from here.
+ask = true
+memory_max = 4000
+index = true
+# The lead only delegates, reads and keeps notes, so nothing waits for a click.
+# middleware/pre_tool holds every draft to the voice rules instead.
+approval = "never"
+max_turns = 40

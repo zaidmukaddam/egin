@@ -1,0 +1,3 @@
+#!/bin/sh
+# The whole team shares the lead's voice check.
+exec "$(dirname "$0")/../../../middleware/pre_tool"

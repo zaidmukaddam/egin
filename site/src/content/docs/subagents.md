@@ -27,6 +27,7 @@ The parent's prompt names its subagents and tells the model to use the `task` to
 
 - The subagent runs as its own session, saved and resumable like any other, inside its parent's.
 - It gets a [sandbox](/docs/sandboxing) of its own, named for its own session.
+- It inherits what the parent was run with (`--model`, `--set`, an eval variant, the model a session picked) for every setting its own `agent.toml` leaves out. A subagent that names its own model keeps it.
 - Cancelling the parent cancels any subagent it is running.
 - Its approval requests arrive on its own session's event stream; the `egin` client follows them for you. See the [HTTP API](/docs/http-api#approvals).
 - After a restart, egin doesn't resume a subagent on its own: the parent resumes, its interrupted `task` call tells the model the subagent didn't finish, and the model decides whether to start it again.

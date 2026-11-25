@@ -1,0 +1,3 @@
+prompt = "Write the launch blog post for egin 0.2, which adds a marketing template: a lead agent and three specialists in one folder, started with `egin init my-team --template marketing`."
+# A real draft that shows the command, with no em dash and nothing from the brand's Never say list.
+check = "f=$(ls drafts/*.md | head -1) && [ $(wc -w < \"$f\") -gt 200 ] && grep -q 'template marketing' \"$f\" && ! grep -qi -e '—' -e 'ai-powered' \"$f\""

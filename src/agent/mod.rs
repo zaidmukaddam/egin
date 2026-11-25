@@ -280,6 +280,9 @@ pub struct Agent {
     pub exporters: Vec<crate::telemetry::Exporter>,
     /// Settings egin chose because agent.toml left them out, each with why, for the CLI to print once.
     pub chosen: Vec<String>,
+    /// What the caller set on top of agent.toml (`--set`, `--model`, an eval variant, a session's model).
+    /// A subagent inherits each one its own agent.toml leaves out.
+    pub overrides: toml::Table,
 }
 
 /// The model to use when agent.toml names none: the router's default with a You.com key, otherwise
@@ -423,6 +426,13 @@ fn header_tool(path: &Path, text: &str) -> Result<Option<CustomTool>> {
 }
 
 impl Agent {
+    /// The overrides a subagent in `dir` runs with: this agent's, minus the keys the subagent's own
+    /// agent.toml sets, so `--model` reaches a subagent that names no model and spares one that does.
+    pub fn inherited(&self, dir: &Path) -> toml::Table {
+        let own: toml::Table = fs::read_to_string(dir.join("agent.toml")).ok().and_then(|s| toml::from_str(&s).ok()).unwrap_or_default();
+        self.overrides.iter().filter(|(k, _)| !own.contains_key(*k)).map(|(k, v)| (k.clone(), v.clone())).collect()
+    }
+
     pub fn load(dir: &Path, overrides: &toml::Table) -> Result<Agent> {
         let dir = dir.canonicalize().with_context(|| format!("no agent folder at {}", dir.display()))?;
         // An app with its agent in agent/ (the web template) can be named by the app's own folder.
@@ -592,6 +602,7 @@ impl Agent {
             exporters,
             dir,
             chosen,
+            overrides: overrides.clone(),
         })
     }
 
@@ -684,7 +695,9 @@ pub fn init_template(dir: &Path, template: &str) -> Result<()> {
         let p = dir.join(path);
         fs::create_dir_all(p.parent().unwrap_or(dir))?;
         fs::write(&p, content)?;
-        if path.starts_with("tools") && path.extension().is_none_or(|e| e != "json") || path.starts_with("middleware") {
+        // By folder name, so a subagent's tools/ and middleware/ run too.
+        let folder = path.parent().and_then(|d| d.file_name()).and_then(|n| n.to_str());
+        if folder == Some("tools") && path.extension().is_none_or(|e| e != "json") || folder == Some("middleware") {
             executable(&p)?;
         }
     }
