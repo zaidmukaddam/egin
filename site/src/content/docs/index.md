@@ -18,6 +18,8 @@ An egin agent is a folder of plain files: what it should do, the tools it can us
 npx egin-ts@latest init my-agent
 ```
 
+`npx` doesn't put `egin` on your `PATH`, so the commands on this page all start with `npx egin-ts@latest`. If you installed egin with `npm install -g egin-ts` or Cargo, type `egin` instead.
+
 This writes a starter folder:
 
 ```
@@ -42,13 +44,13 @@ export ANTHROPIC_API_KEY=...
 egin picks a model for the key it finds. To see what it picked and whether anything is missing:
 
 ```bash
-egin info my-agent
+npx egin-ts@latest info my-agent
 ```
 
 ## Run it
 
 ```bash
-egin run my-agent "say hello"
+npx egin-ts@latest run my-agent "say hello"
 ```
 
 ```
@@ -59,10 +61,10 @@ Hello! I'm ready to help. What would you like me to work on?
 The last line is the run's receipt: its session id, how many model and tool calls it made, and what it cost. Every session is saved, so you can continue it:
 
 ```bash
-egin run my-agent --session 660c9c4cd517400 "now write it in French"
+npx egin-ts@latest run my-agent --session 660c9c4cd517400 "now write it in French"
 ```
 
-For a back-and-forth conversation, use `egin chat my-agent`.
+For a back-and-forth conversation, use `npx egin-ts@latest chat my-agent`.
 
 Before running a tool that isn't marked safe, such as a shell command, egin asks you first. Pass `--yes` to approve everything for one run.
 
@@ -70,10 +72,10 @@ Before running a tool that isn't marked safe, such as a shell command, egin asks
 
 1. Change what it does: edit `instructions.md` and run it again. See [Instructions and memory](/docs/instructions).
 2. Give it a tool: put a script in `tools/`. See [Tools](/docs/tools).
-3. Check that it works: run `egin eval my-agent`. See [Evals](/docs/evals).
-4. Put it online: run `egin serve my-agent`. See the [HTTP API](/docs/http-api), then [Deploy](/docs/deploy).
+3. Check that it works: run `npx egin-ts@latest eval my-agent`. See [Evals](/docs/evals).
+4. Put it online: run `npx egin-ts@latest serve my-agent`. See the [HTTP API](/docs/http-api), then [Deploy](/docs/deploy).
 
-To start from something closer to what you want to build, pick a template: `egin init my-agent --template research`. [Use cases](/docs/use-cases) shows each one. Then go to the page for what you need:
+To start from something closer to what you want to build, pick a template: `npx egin-ts@latest init my-agent --template research`. [Use cases](/docs/use-cases) shows each one. Then go to the page for what you need:
 
 | Goal | Read |
 |---|---|
@@ -93,11 +95,17 @@ To start from something closer to what you want to build, pick a template: `egin
 
 ## Other ways to install
 
-`pnpm dlx` and `bunx` work like `npx`. To keep `egin` on your `PATH`, install it from the [source](https://github.com/zaidmukaddam/egin) with Cargo:
+`pnpm dlx` and `bunx` work like `npx`. To keep `egin` on your `PATH`, install it globally with npm, or from the [source](https://github.com/zaidmukaddam/egin) with Cargo:
+
+```bash
+npm install -g egin-ts
+```
 
 ```bash
 cargo install --git https://github.com/zaidmukaddam/egin
 ```
+
+The rest of these docs write commands as `egin ...`. Without a global install, put `npx egin-ts@latest` in place of `egin`.
 
 To build from source, run `cargo build --release` in the repository. The binary is written to `target/release/egin`.
 

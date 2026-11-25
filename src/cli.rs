@@ -498,9 +498,11 @@ impl Cli {
         match self.cmd {
             Cmd::Init { dir, template } => {
                 agent::init_template(&dir, &template)?;
+                // The npm launcher says how it was run, so the hint works where `egin` isn't on PATH.
+                let egin = std::env::var("EGIN_LAUNCHER").unwrap_or_else(|_| "egin".into());
                 match template.as_str() {
                     "web" => println!("created {}\nnext: cd {} && npm install && npm run dev", dir.display(), dir.display()),
-                    _ => println!("created {}\nnext: egin run {} \"say hello\"", dir.display(), dir.display()),
+                    _ => println!("created {}\nnext: {egin} run {} \"say hello\"", dir.display(), dir.display()),
                 }
             }
             Cmd::Add { item, source, .. } if item.as_deref() == Some("channel") => print!("{}", channel_guide(source.as_deref())),

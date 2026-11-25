@@ -31,7 +31,7 @@ You get a Next.js app with the agent in `agent/`. `npm run dev` starts both. The
 
 ## Add an agent to a Next.js app
 
-Put the agent in `agent/` (or run `egin init agent`), then two files:
+Put the agent in `agent/` (or run `npx egin-ts@latest init agent`), then two files:
 
 ```ts
 // next.config.ts
