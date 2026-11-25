@@ -2,6 +2,14 @@
 
 Every release of the `egin` binary and the `egin-ts` npm package, newest first.
 
+## Unreleased
+
+On main, in the next release
+
+- A marketing template: `egin init my-team --template marketing` writes a lead agent and three specialists, `positioning`, `writer` and `social`, that draft launch posts, blog posts and social posts into `workspace/drafts/`. Its middleware refuses a draft with an em dash, a hashtag, a hype phrase, a word from the brand's "Never say" list or an X post over 280 characters, and tells the model what to fix. Nothing is published.
+- A subagent runs with the model and settings you gave the parent (`--model`, `--set`, an eval variant, the model a session picked) unless its own `agent.toml` sets them. Subagents used to ignore them and fall back to their own defaults, so an eval of one model ran its subagents on another.
+- `egin init` marks a subagent's `tools/` and `middleware/` scripts executable, as it already did the top-level agent's.
+
 ## 0.1.4
 
 November 25, 2026
