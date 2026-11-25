@@ -95,14 +95,14 @@ To start from something closer to what you want to build, pick a template: `npx 
 
 ## Other ways to install
 
-`pnpm dlx` and `bunx` work like `npx`. To keep `egin` on your `PATH`, install it globally with npm, or from the [source](https://github.com/zaidmukaddam/egin) with Cargo:
+`pnpm dlx` and `bunx` work like `npx`. To keep `egin` on your `PATH`, install it globally with npm or Cargo:
 
 ```bash
 npm install -g egin-ts
 ```
 
 ```bash
-cargo install --git https://github.com/zaidmukaddam/egin
+cargo install egin
 ```
 
 The rest of these docs write commands as `egin ...`. Without a global install, put `npx egin-ts@latest` in place of `egin`.

@@ -8,6 +8,8 @@ November 25, 2026
 
 - `egin chat` shows the right session cost after Ctrl+R resumes a session. Replaying the transcript added every model call's cost a second time, so a resumed session showed double what it had spent. Nothing was billed twice.
 - `egin chat` says "1 line" instead of "1 lines" on approval cards, collapsed output, pastes and the scroll indicator.
+- egin is on crates.io: `cargo install egin` puts it on your `PATH`.
+- Under `npx`, `egin init` suggests `npx egin-ts@latest run ...` as the next step, and the getting-started page writes every command that way. The bare `egin` they printed before isn't on `PATH` after `npx`, so the second command failed with `egin: not found`.
 
 ## 0.1.2
 

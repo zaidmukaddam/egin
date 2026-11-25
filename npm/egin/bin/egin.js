@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const bin = fileURLToPath(new URL(`./${process.platform}-${process.arch}/egin`, import.meta.url));
 if (!existsSync(bin)) {
   console.error(`egin has no prebuilt binary for ${process.platform}-${process.arch}.`);
-  console.error("Install it with Cargo instead: cargo install --git https://github.com/zaidmukaddam/egin");
+  console.error("Install it with Cargo instead: cargo install egin");
   process.exit(1);
 }
 try {
