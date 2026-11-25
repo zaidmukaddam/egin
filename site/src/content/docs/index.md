@@ -18,7 +18,7 @@ An egin agent is a folder of plain files: what it should do, the tools it can us
 npx egin-ts@latest init my-agent
 ```
 
-`npx` doesn't put `egin` on your `PATH`, so the commands on this page all start with `npx egin-ts@latest`. If you installed egin with `npm install -g egin-ts` or Cargo, type `egin` instead.
+`npx` doesn't put `egin` on your `PATH`, so the commands on this page all start with `npx egin-ts@latest`. A bare `egin` command fails with `egin: not found` or `command not found: egin` until you install it with `npm install -g egin-ts` or Cargo. After that, type `egin` instead.
 
 This writes a starter folder:
 
