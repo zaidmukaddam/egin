@@ -702,7 +702,7 @@ async fn teardown(vm: &Vm) {
         Vm::Micro(vm) => vm,
         Vm::Daytona(r) => {
             if let Err(e) = r.delete().await {
-                eprintln!("egin: {e:#}; Daytona deletes it when its lifetime runs out");
+                eprintln!("egin: {e:#}; Daytona deletes it after an hour without a command");
             }
             return;
         }

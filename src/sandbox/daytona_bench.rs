@@ -4,7 +4,8 @@
 //! seconds, so amd64-only task images (DeepSWE's) run as they are. A separate verifier's tests/ is built the
 //! same way. Commands and files go through the sandbox's toolbox, as for the macOS sandboxes.
 //!
-//! Each sandbox is created with a lifetime that ends it even if egin never does (a crash), and an offline task's
+//! Each sandbox is created with a lifetime that ends it even if egin never does (a crash), is deleted after an
+//! idle hour (a live run touches it every few minutes, a dead one cannot), and an offline task's
 //! sandbox is created with its network blocked, outside the VM where the agent cannot undo it.
 
 use super::daytona_macos::{process, upload_file};
@@ -23,6 +24,36 @@ pub struct Remote {
     key: String,
     /// Set when Daytona could not give the run a sandbox and E2B did (`e2b_fallback`).
     e2b: Option<super::e2b::Sb>,
+    /// Keeps the sandbox from idling out while any clone of this handle lives (see `create`).
+    _beat: Option<std::sync::Arc<Beat>>,
+}
+
+/// How long a bench sandbox may go without a toolbox call before Daytona deletes it, and how often a live run
+/// makes one. A run whose egin died (killed, out of memory, its host gone) stops calling, so its sandbox goes
+/// within the hour instead of holding Daytona's quota until its lifetime ends, up to ~9 h on FrontierHarness.
+/// An hour, not less: a busy org has refused toolbox calls (429) for many minutes at a time.
+const IDLE_DELETE: u64 = 3600;
+const BEAT: Duration = Duration::from_secs(300);
+
+/// A task touching a sandbox every `BEAT`, stopped when dropped.
+#[derive(Debug)]
+pub struct Beat(tokio::task::JoinHandle<()>);
+
+impl Drop for Beat {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
+}
+
+fn beat(http: reqwest::Client, key: String, toolbox: String) -> Beat {
+    Beat(tokio::spawn(async move {
+        let body = json!({"kind": "exec", "shellCommand": "true", "cwd": "/", "timeoutMs": 10_000});
+        loop {
+            tokio::time::sleep(BEAT).await;
+            // Any toolbox call resets the idle clock; a failed one is retried at the next beat.
+            let _ = http.post(format!("{toolbox}/processes")).bearer_auth(&key).json(&body).timeout(Duration::from_secs(60)).send().await;
+        }
+    }))
 }
 
 /// A run's sandbox from E2B when Daytona cannot give one: a template of the task's base image (built once), a
@@ -32,7 +63,7 @@ pub async fn e2b_fallback(app: &App, name: &str, image: &str, env: &[(String, St
     let template = super::e2b::bench_template(app, image).await?;
     let sb = super::e2b::bench_create(app, name, &template, env, cpus, offline, lifetime).await?;
     let (id, toolbox) = super::e2b::to_handle(&sb);
-    Ok(Remote { id, name: name.into(), toolbox, http: app.http.clone(), key: String::new(), e2b: Some(sb) })
+    Ok(Remote { id, name: name.into(), toolbox, http: app.http.clone(), key: String::new(), e2b: Some(sb), _beat: None })
 }
 
 struct Api {
@@ -219,9 +250,10 @@ pub async fn create(
         "memory_mib": memory_mb.max(2048),
         // Room for what the agent installs on top of the image.
         "disk_mib": 20_480,
-        // No idle expiry: while the model thinks for minutes nothing touches the sandbox, and the project default
-        // stopped it mid-run (SANDBOX_NOT_RUNNING killed 28 FrontierHarness runs).
-        "lifecycle_policy": {"timeout_seconds": lifetime, "on_timeout": "delete", "idle_expiry_seconds": -1},
+        // Deleted after an idle hour, which only an orphan reaches: a live run's handle touches it every few
+        // minutes, since the model can think for minutes without a command, and the project default (stop, not
+        // delete) stopped sandboxes mid-run (SANDBOX_NOT_RUNNING killed 28 FrontierHarness runs).
+        "lifecycle_policy": {"timeout_seconds": lifetime, "on_timeout": "delete", "idle_expiry_seconds": IDLE_DELETE, "on_idle_timeout": "delete"},
         "wait_seconds": 0,
     });
     if let Some((secret, _)) = model {
@@ -250,7 +282,8 @@ pub async fn create(
         bail!("daytona sandbox {name} did not start (status {})", sb["status"]);
     }
     let toolbox = format!("{}/{id}", sb["toolbox_proxy_url"].as_str().context("daytona: no toolbox_proxy_url")?.trim_end_matches('/'));
-    let r = Remote { id, name: name.into(), toolbox, http: http.clone(), key: a.key, e2b: None };
+    let b = beat(http.clone(), a.key.clone(), toolbox.clone());
+    let r = Remote { id, name: name.into(), toolbox, http: http.clone(), key: a.key, e2b: None, _beat: Some(std::sync::Arc::new(b)) };
     // Daytona puts its own minimal git (no `submodule`) at /usr/local/bin, ahead of the image's. Use the image's
     // git when it is a full one, so Dockerfile steps, agents and verifiers see the toolchain the task was built for.
     let fix = "g=/usr/local/bin/git; [ -x /usr/bin/git ] && ! [ $g -ef /usr/bin/git ] \
@@ -301,7 +334,7 @@ pub async fn exec(app: &App, agent: &crate::agent::Agent, sid: &str, argv: &[Str
         return super::e2b::bench_exec(&app.http, &sb, argv, stdin, &super::workdir(agent), timeout).await;
     }
     let a = api()?;
-    let r = Remote { id, name: super::vm_name(sid), toolbox, http: app.http.clone(), key: a.key, e2b: None };
+    let r = Remote { id, name: super::vm_name(sid), toolbox, http: app.http.clone(), key: a.key, e2b: None, _beat: None };
     let script = argv.iter().map(|s| super::quote(s)).collect::<Vec<_>>().join(" ");
     let mut script = script;
     if let Some(data) = stdin {
