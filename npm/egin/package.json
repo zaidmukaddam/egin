@@ -1,6 +1,6 @@
 {
   "name": "egin-ts",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Durable backend agents as folders. The egin CLI, a client for egin serve, Next.js integration, a proxy for your app's server, and React, Vue and Svelte bindings.",
   "license": "MIT",
   "homepage": "https://egin.dev",
