@@ -96,6 +96,7 @@ The stream replays the stored log first, then sends live events as they happen. 
 | `wrap_up` | A turn or spend limit was reached; one last answer follows |
 | `deadline` | Time is running out under `deadline` (`left_secs`, `kind`) |
 | `model_timeout` | A model call ran past its time cap under `deadline` and was asked again at low effort (`secs`) |
+| `model_stalled` | That low-effort retry streamed nothing for `secs` and was asked again; the turn fails after three in a row |
 | `review`, `independent_review`, `test_guard` | With `review = true`: the check before the answer and what it found |
 | `done` | The run finished |
 | `error` | The run failed |

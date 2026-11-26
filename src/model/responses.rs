@@ -139,6 +139,7 @@ pub(super) async fn chat_once(app: &App, ep: &Endpoint, body: &Value, on: &mut (
             match (v["type"].as_str().unwrap_or(""), delta) {
                 ("response.output_text.delta", Some(s)) => on("token", json!({"text": s})),
                 ("response.reasoning_summary_text.delta", Some(s)) => on("reasoning", json!({"text": s})),
+                ("response.function_call_arguments.delta", Some(s)) => on("tool_args", json!({"text": s})),
                 // `incomplete` is a reply cut at the output limit: what arrived still counts.
                 ("response.completed" | "response.incomplete", _) => done = Some(v["response"].clone()),
                 ("response.failed", _) => bail!("model stream error: {}", v["response"]["error"]),

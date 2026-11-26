@@ -410,7 +410,13 @@ async fn stream(app: &App, url: &str, key: &str, betas: &[&str], req: &Value, on
                             }
                         }
                         "signature_delta" => b["signature"] = d["signature"].clone(),
-                        "input_json_delta" => json_bufs[i].push_str(d["partial_json"].as_str().unwrap_or("")),
+                        "input_json_delta" => {
+                            let s = d["partial_json"].as_str().unwrap_or("");
+                            json_bufs[i].push_str(s);
+                            if !s.is_empty() {
+                                on("tool_args", json!({"text": s}));
+                            }
+                        }
                         "citations_delta" => match b["citations"].as_array_mut() {
                             Some(c) => c.push(d["citation"].clone()),
                             None => b["citations"] = json!([d["citation"]]),

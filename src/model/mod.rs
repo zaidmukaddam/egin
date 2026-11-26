@@ -188,9 +188,15 @@ pub(crate) mod breaker {
         STRIKES.store(0, Ordering::Relaxed);
     }
 
+    /// Held by unit tests that make model calls and by the breaker's own test, whose paused clock leaves a pause
+    /// that real-time callers would wait out.
+    #[cfg(test)]
+    pub(crate) static TEST_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
     #[cfg(test)]
     #[tokio::test(start_paused = true)]
     async fn pauses_grow_with_consecutive_429s_and_reset_on_success() {
+        let _one = TEST_LOCK.lock().await;
         let waited = |t: Instant| Instant::now() - t;
         let t = Instant::now();
         gate().await;
@@ -211,6 +217,8 @@ pub(crate) mod breaker {
         let t = Instant::now();
         gate().await;
         assert_eq!(waited(t), Duration::ZERO, "closed again once the pause has passed");
+        *UNTIL.lock().unwrap() = None;
+        ok();
     }
 }
 

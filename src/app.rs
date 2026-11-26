@@ -120,6 +120,10 @@ impl App {
 
     /// Record an event in the session log and broadcast it to live listeners.
     pub fn emit(&self, session: &str, kind: &str, mut body: Value) {
+        // Tool-call argument deltas only tell a capped model call that its stream is alive; nothing shows them.
+        if kind == "tool_args" {
+            return;
+        }
         body["type"] = json!(kind);
         // When it happened, for traces: a tool call's time is from its tool_call to its tool_result.
         body["at"] = json!((crate::telemetry::nanos() / 1_000_000) as u64);

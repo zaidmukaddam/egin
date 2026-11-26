@@ -634,6 +634,7 @@ impl Ui {
             "subagent" => self.note(format!("{} started", s("agent"))),
             "deadline" => self.note(format!("{} left on the clock", secs(Duration::from_secs_f64(b["left_secs"].as_f64().unwrap_or(0.0))))),
             "model_timeout" => self.note("the model took too long; asked again with low effort"),
+            "model_stalled" => self.note("the model stopped streaming; asked again"),
             "done" | "error" | "cancelled" => self.end_turn(kind, &s("message")),
             _ => {}
         }

@@ -170,6 +170,9 @@ pub(super) async fn chat_once(app: &App, ep: &Endpoint, body: &Value, on: &mut (
                 }
                 append(&mut calls[i]["function"]["name"], &tc["function"]["name"]);
                 append(&mut calls[i]["function"]["arguments"], &tc["function"]["arguments"]);
+                if let Some(s) = tc["function"]["arguments"].as_str().filter(|s| !s.is_empty()) {
+                    on("tool_args", json!({"text": s}));
+                }
                 // Fields a provider adds and expects back (Gemini's thought signatures), kept verbatim.
                 for (k, v) in tc.as_object().into_iter().flatten() {
                     if !matches!(k.as_str(), "index" | "id" | "type" | "function") && !v.is_null() {

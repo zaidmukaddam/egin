@@ -541,29 +541,46 @@ const EMPTY_NUDGES: usize = 3;
 const RUNAWAY_CHARS: usize = 64_000;
 /// How long a call over its time cap may stream nothing before it counts as stalled.
 const STALL: std::time::Duration = std::time::Duration::from_secs(60);
+/// How long the low-effort retry may wait for its first output before the stall check starts.
+const RETRY_FIRST: std::time::Duration = std::time::Duration::from_secs(120);
+/// Stalled low-effort retries in a row before the turn fails.
+const RETRY_STALLS: usize = 3;
 
 /// A model call cut short (`None`) only once it is past `cap` and is either reasoning without end (past
-/// `RUNAWAY_CHARS` of output) or has stalled. A plain time cap cut ordinary replies on a slow server: on one GPU
-/// Inkling 2 Mini streamed ~30 tokens/s, so a normal 4k-token reply passed the 180 s floor, and the
-/// low-effort retry started it again from nothing (26 cuts in 87 Terminal-Bench runs, most of them in runs that
-/// then ran out of time).
-async fn capped_chat(app: &App, ep: &model::Endpoint, body: &Value, sid: &str, cap: std::time::Duration) -> Option<Result<model::Reply>> {
+/// `RUNAWAY_CHARS` of output, when `runaway` is set) or has streamed nothing for `stall`. A plain time cap cut
+/// ordinary replies on a slow server: on one GPU Inkling 2 Mini streamed ~30 tokens/s, so a normal 4k-token reply
+/// passed the 180 s floor, and the low-effort retry started it again from nothing (26 cuts in 87 Terminal-Bench
+/// runs, most of them in runs that then ran out of time). Tool-call arguments count as output for the stall check
+/// (a long file write streams nothing else) but not toward `RUNAWAY_CHARS`.
+async fn capped_chat(
+    app: &App,
+    ep: &model::Endpoint,
+    body: &Value,
+    sid: &str,
+    cap: std::time::Duration,
+    stall: std::time::Duration,
+    runaway: bool,
+) -> Option<Result<model::Reply>> {
     use std::sync::atomic::{AtomicUsize, Ordering::Relaxed};
-    let streamed = AtomicUsize::new(0);
+    let (streamed, alive) = (AtomicUsize::new(0), AtomicUsize::new(0));
     let mut on = |kind: &str, data: Value| {
+        let n = data["text"].as_str().map_or(0, str::len);
         if kind == "token" || kind == "reasoning" {
-            streamed.fetch_add(data["text"].as_str().map_or(0, str::len), Relaxed);
+            streamed.fetch_add(n, Relaxed);
+        }
+        if kind == "token" || kind == "reasoning" || kind == "tool_args" {
+            alive.fetch_add(n, Relaxed);
         }
         app.emit(sid, kind, data)
     };
     let call = model::chat(app, ep, body, &mut on);
     let cut = async {
         tokio::time::sleep(cap).await;
-        let (mut seen, mut quiet) = (streamed.load(Relaxed), std::time::Duration::ZERO);
-        let tick = std::time::Duration::from_secs(5);
+        let (mut seen, mut quiet) = (alive.load(Relaxed), std::time::Duration::ZERO);
+        let tick = stall / 12;
         loop {
-            let now = streamed.load(Relaxed);
-            if now >= RUNAWAY_CHARS || quiet >= STALL {
+            let now = alive.load(Relaxed);
+            if (runaway && streamed.load(Relaxed) >= RUNAWAY_CHARS) || quiet >= stall {
                 return;
             }
             quiet = if now == seen { quiet + tick } else { std::time::Duration::ZERO };
@@ -844,18 +861,38 @@ async fn run_tools(app: &Arc<App>, agent: &Arc<Agent>, sid: &str, calls: &[Value
 async fn chat_once(app: &App, ep: &model::Endpoint, body: &Value, sid: &str, cap: Option<std::time::Duration>) -> Result<model::Reply> {
     match cap {
         None => model::chat(app, ep, body, &mut |kind, data| app.emit(sid, kind, data)).await,
-        Some(cap) => match capped_chat(app, ep, body, sid, cap).await {
+        Some(cap) => match capped_chat(app, ep, body, sid, cap, STALL, true).await {
             Some(r) => r,
             None => {
-                // The retry runs uncapped: ending the run on a second slow call threw away work that the
-                // task's own time limit would still have allowed (two DeepSWE runs, muse-spark).
                 app.emit(sid, "model_timeout", json!({"secs": cap.as_secs()}));
                 let mut low = body.clone();
                 low["reasoning_effort"] = json!("low");
-                model::chat(app, ep, &low, &mut |kind, data| app.emit(sid, kind, data)).await
+                low_effort_retry(app, ep, &low, sid, RETRY_FIRST, STALL).await
             }
         },
     }
+}
+
+/// The low-effort retry after a cut call. It runs as long as the task allows while it streams: ending the run on
+/// a second slow call threw away work that the task's own time limit would still have allowed (two DeepSWE runs,
+/// muse-spark). A retry that streams nothing for `stall` is asked again, since it would otherwise hold the run
+/// until the task's limit: on FrontierHarness kimi-k3 two retries ran 11 and 13 minutes with no reply, to the
+/// end of path-tracing-reverse's 30.
+async fn low_effort_retry(
+    app: &App,
+    ep: &model::Endpoint,
+    low: &Value,
+    sid: &str,
+    first: std::time::Duration,
+    stall: std::time::Duration,
+) -> Result<model::Reply> {
+    for _ in 0..RETRY_STALLS {
+        match capped_chat(app, ep, low, sid, first, stall, false).await {
+            Some(r) => return r,
+            None => app.emit(sid, "model_stalled", json!({"secs": stall.as_secs()})),
+        }
+    }
+    bail!("the model streamed nothing for {}s, {RETRY_STALLS} times running", stall.as_secs())
 }
 
 fn has_images(messages: &Value) -> bool {
@@ -1180,4 +1217,106 @@ async fn shrink(
         }
     }
     Ok(msgs)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering::Relaxed};
+    use std::time::Duration;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    /// One SSE stream per request: `streams[n]` is what the n-th request gets, as (delay before, data line) pairs,
+    /// and a stream whose last delay is long hangs there. Returns the endpoint and the request count.
+    async fn server(streams: Vec<Vec<(u64, Value)>>) -> (model::Endpoint, Arc<AtomicUsize>) {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let n = Arc::new(AtomicUsize::new(0));
+        let count = n.clone();
+        tokio::spawn(async move {
+            loop {
+                let (mut s, _) = listener.accept().await.unwrap();
+                let chunks = streams.get(count.fetch_add(1, Relaxed)).cloned().unwrap_or_default();
+                tokio::spawn(async move {
+                    let mut buf = vec![];
+                    let mut b = [0u8; 4096];
+                    loop {
+                        let k = s.read(&mut b).await.unwrap();
+                        buf.extend_from_slice(&b[..k]);
+                        let text = String::from_utf8_lossy(&buf);
+                        let Some(end) = text.find("\r\n\r\n") else { continue };
+                        let len = text[..end]
+                            .lines()
+                            .find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length:").map(|v| v.trim().parse::<usize>().unwrap()))
+                            .unwrap_or(0);
+                        if buf.len() >= end + 4 + len || k == 0 {
+                            break;
+                        }
+                    }
+                    let head = "HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\nconnection: close\r\n\r\n";
+                    if s.write_all(head.as_bytes()).await.is_err() {
+                        return;
+                    }
+                    for (ms, c) in chunks {
+                        tokio::time::sleep(Duration::from_millis(ms)).await;
+                        if s.write_all(format!("data: {c}\n\n").as_bytes()).await.is_err() {
+                            return;
+                        }
+                    }
+                });
+            }
+        });
+        let ep = model::Endpoint { provider: "you".into(), protocol: model::Protocol::OpenAi, url, key: "k".into(), model: "mock".into() };
+        (ep, n)
+    }
+
+    fn app() -> Arc<App> {
+        let dir = std::env::temp_dir().join(format!("egin-retry-{}", crate::new_id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        App::with(&dir.join("state.db"), Approve::Auto, "k", "http://127.0.0.1:9", "http://127.0.0.1:9").unwrap()
+    }
+
+    fn reply(text: &str) -> Vec<(u64, Value)> {
+        vec![(0, json!({"choices": [{"delta": {"role": "assistant", "content": text}}]})), (0, json!({"choices": [{"delta": {}, "finish_reason": "stop"}]}))]
+    }
+
+    /// A first chunk, then nothing for a minute.
+    fn hang() -> Vec<(u64, Value)> {
+        vec![(0, json!({"choices": [{"delta": {"role": "assistant", "reasoning_content": "hm"}}]})), (60_000, json!({}))]
+    }
+
+    const FIRST: Duration = Duration::from_millis(200);
+    const STALL: Duration = Duration::from_millis(600);
+
+    #[tokio::test]
+    async fn a_stalled_retry_is_asked_again() {
+        let _one = model::breaker::TEST_LOCK.lock().await;
+        let (ep, n) = server(vec![hang(), reply("done")]).await;
+        let r = low_effort_retry(&app(), &ep, &json!({"messages": []}), "s", FIRST, STALL).await.unwrap();
+        assert_eq!((r.message["content"].as_str(), n.load(Relaxed)), (Some("done"), 2));
+    }
+
+    #[tokio::test]
+    async fn a_retry_that_keeps_stalling_fails_the_turn() {
+        let _one = model::breaker::TEST_LOCK.lock().await;
+        let (ep, n) = server(vec![hang(), hang(), hang(), reply("too late")]).await;
+        let Err(e) = low_effort_retry(&app(), &ep, &json!({"messages": []}), "s", FIRST, STALL).await else { panic!("the retry answered") };
+        assert!(e.to_string().contains("streamed nothing"), "{e}");
+        assert_eq!(n.load(Relaxed), RETRY_STALLS);
+    }
+
+    #[tokio::test]
+    async fn a_slow_tool_call_counts_as_streaming() {
+        let _one = model::breaker::TEST_LOCK.lock().await;
+        // Twelve argument pieces 200 ms apart: 2.4 s with no text or reasoning, never 600 ms with nothing.
+        let mut s: Vec<(u64, Value)> = vec![(
+            0,
+            json!({"choices": [{"delta": {"role": "assistant", "tool_calls": [{"index": 0, "id": "c1", "function": {"name": "bash", "arguments": ""}}]}}]}),
+        )];
+        s.extend((0..12).map(|i| (200, json!({"choices": [{"delta": {"tool_calls": [{"index": 0, "function": {"arguments": if i == 0 { "{\"command\": \"" } else if i == 11 { "x\"}" } else { "x" }}}]}}]}))));
+        s.push((0, json!({"choices": [{"delta": {}, "finish_reason": "tool_calls"}]})));
+        let (ep, n) = server(vec![s]).await;
+        let r = low_effort_retry(&app(), &ep, &json!({"messages": []}), "s", FIRST, STALL).await.unwrap();
+        assert_eq!((r.message["tool_calls"][0]["function"]["arguments"].as_str(), n.load(Relaxed)), (Some("{\"command\": \"xxxxxxxxxxx\"}"), 1));
+    }
 }
