@@ -2,6 +2,14 @@
 
 Every release of the `egin` binary and the `egin-ts` npm package, newest first.
 
+## 0.1.6
+
+November 26, 2026
+
+- The marketing template's `writer` has a `programmatic-seo` skill: one page pattern, such as `<product> vs <competitor>`, filled in from a table of sourced facts, one page per row. It drops rows it can't fill with real facts, writes three sample pages for you to check before the rest, then a hub page that links them all.
+- Under `deadline`, the low-effort retry after a `model_timeout` no longer waits out the task's time when its stream goes dead. It waits up to 2 minutes for its first output, then cuts after 60 seconds of silence and asks again, emitting `model_stalled`. After three in a row the turn fails.
+- Tool-call arguments as they stream count as progress, so a model slowly writing a large file through a tool is not cut as stalled.
+
 ## 0.1.5
 
 November 25, 2026
