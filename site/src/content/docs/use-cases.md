@@ -51,7 +51,7 @@ What makes it work:
 
 ## Marketing team
 
-A lead agent and three specialists: `positioning` keeps `brand.md`, the shared picture of the product; `writer` drafts launch posts, blog posts and landing pages; `social` drafts posts for X, LinkedIn and Bluesky. You bring the work to the lead, it briefs the right specialist, and the drafts land as files in `workspace/drafts/`. Nothing is published.
+A lead agent and three specialists: `positioning` keeps `brand.md`, the shared picture of the product; `writer` drafts launch posts, blog posts, landing pages and programmatic SEO pages; `social` drafts posts for X, LinkedIn and Bluesky. You bring the work to the lead, it briefs the right specialist, and the drafts land as files in `workspace/drafts/`. Nothing is published.
 
 ```bash
 egin init my-team --template marketing
